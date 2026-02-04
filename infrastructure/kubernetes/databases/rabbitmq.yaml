@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+  namespace: collector
+data:
+  definitions.json: |
+    {
+      "exchanges": [
+        {
+          "name": "collector.events",
+          "vhost": "/",
+          "type": "topic",
+          "durable": true,
+          "auto_delete": false,
+          "internal": false,
+          "arguments": {}
+        }
+      ],
+      "users": [
+        {
+          "name": "guest",
+          "password_hash": "BM8X5Xn2uJzvKxJ+JjQ8X6Z8Y7Z8", 
+          "hashing_algorithm": "rabbit_password_hashing_sha256",
+          "tags": "administrator"
+        }
+      ],
+      "vhosts": [
+        {
+          "name": "/"
+        }
+      ],
+      "permissions": [
+        {
+          "user": "guest",
+          "vhost": "/",
+          "configure": ".*",
+          "write": ".*",
+          "read": ".*"
+        }
+      ]
+    }
+  rabbitmq.conf: |
+      load_definitions = /etc/rabbitmq/definitions.json
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: collector
+spec:
+  ports:
+    - port: 5672
+      name: amqp
+      targetPort: 5672
+    - port: 15672
+      name: management
+      targetPort: 15672
+  selector:
+    app: rabbitmq
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+  namespace: collector
+spec:
+  serviceName: "rabbitmq"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3-management-alpine
+          ports:
+            - containerPort: 5672
+              name: amqp
+            - containerPort: 15672
+              name: management
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: "guest"
+            - name: RABBITMQ_DEFAULT_PASS
+              value: "guest"
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+            - name: rabbitmq-config
+              mountPath: /etc/rabbitmq/definitions.json
+              subPath: definitions.json
+            - name: rabbitmq-config
+              mountPath: /etc/rabbitmq/rabbitmq.conf
+              subPath: rabbitmq.conf
+      volumes:
+        - name: rabbitmq-config
+          configMap:
+            name: rabbitmq-config
+  volumeClaimTemplates:
+    - metadata:
+        name: rabbitmq-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 2Gi

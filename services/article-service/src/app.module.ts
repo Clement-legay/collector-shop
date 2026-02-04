@@ -5,6 +5,7 @@ import { ArticlesModule } from './articles/articles.module';
 import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { Article } from './articles/entities/article.entity';
+import { HealthController } from './health.controller';
 
 @Module({
     imports: [
@@ -32,5 +33,6 @@ import { Article } from './articles/entities/article.entity';
         MetricsModule,
         ArticlesModule,
     ],
+    controllers: [HealthController],
 })
 export class AppModule { }

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  namespace: collector
+  labels:
+    app: jaeger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+    spec:
+      containers:
+        - name: jaeger
+          image: jaegertracing/all-in-one:latest
+          ports:
+            - containerPort: 6831
+              protocol: UDP
+              name: agent-compact
+            - containerPort: 16686
+              name: query
+          env:
+            - name: COLLECTOR_ZIPKIN_HTTP_PORT
+              value: "9411"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger
+  namespace: collector
+spec:
+  ports:
+    - port: 6831
+      protocol: UDP
+      name: agent-compact
+      targetPort: 6831
+    - port: 16686
+      name: query
+      targetPort: 16686
+  selector:
+    app: jaeger

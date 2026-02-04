@@ -6,6 +6,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { Transaction } from './payments/entities/transaction.entity';
+import { HealthController } from './health.controller';
 
 @Module({
     imports: [
@@ -34,5 +35,6 @@ import { Transaction } from './payments/entities/transaction.entity';
         MetricsModule,
         PaymentsModule,
     ],
+    controllers: [HealthController],
 })
 export class AppModule { }

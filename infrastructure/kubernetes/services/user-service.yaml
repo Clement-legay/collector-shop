@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: collector
+  labels:
+    app: user-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: collector/user-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3002
+          env:
+            - name: DATABASE_HOST
+              value: "postgresql"
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_NAME
+              value: "user_db"
+            - name: DATABASE_USER
+              value: "collector"
+            - name: DATABASE_PASSWORD
+              value: "collector_password"
+            - name: DATABASE_SCHEMA
+              value: "users"
+            - name: RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: RABBITMQ_USER
+              value: "guest"
+            - name: RABBITMQ_PASS
+              value: "guest"
+            - name: JAEGER_AGENT_HOST
+              value: "jaeger"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: collector
+spec:
+  ports:
+    - port: 3002
+      targetPort: 3002
+      name: http
+  selector:
+    app: user-service

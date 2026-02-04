@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: collector
+  labels:
+    app: payment-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+        - name: payment-service
+          image: collector/payment-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3003
+          env:
+            - name: DATABASE_HOST
+              value: "postgresql"
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_NAME
+              value: "payment_db"
+            - name: DATABASE_USER
+              value: "collector"
+            - name: DATABASE_PASSWORD
+              value: "collector_password"
+            - name: DATABASE_SCHEMA
+              value: "payments"
+            - name: RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: RABBITMQ_USER
+              value: "guest"
+            - name: RABBITMQ_PASS
+              value: "guest"
+            - name: JAEGER_AGENT_HOST
+              value: "jaeger"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: collector
+spec:
+  ports:
+    - port: 3003
+      targetPort: 3003
+      name: http
+  selector:
+    app: payment-service

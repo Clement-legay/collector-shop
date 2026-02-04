@@ -5,6 +5,7 @@ import { FraudModule } from './fraud/fraud.module';
 import { ConsumersModule } from './consumers/consumers.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { FraudAlert } from './fraud/entities/fraud-alert.entity';
+import { HealthController } from './health.controller';
 
 @Module({
     imports: [
@@ -32,5 +33,6 @@ import { FraudAlert } from './fraud/entities/fraud-alert.entity';
         FraudModule,
         ConsumersModule,
     ],
+    controllers: [HealthController],
 })
 export class AppModule { }
