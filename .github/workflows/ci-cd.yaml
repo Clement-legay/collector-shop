@@ -104,7 +104,7 @@ jobs:
       - name: Trivy Scan (Image)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ steps.prep.outputs.valid_image_name }}/${{ matrix.service }}:${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ steps.prep.outputs.valid_image_name }}/${{ matrix.service }}:sha-${{ github.sha }}
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
