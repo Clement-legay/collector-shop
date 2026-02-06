@@ -1,13 +1,13 @@
-import { IsUUID, IsNumber, Min } from 'class-validator';
+import { IsUUID, IsNumber, Min } from "class-validator";
 
 export class InitiatePaymentDto {
-    @IsUUID()
-    articleId: string;
+  @IsUUID()
+  articleId: string;
 
-    @IsUUID()
-    buyerId: string;
+  @IsUUID()
+  buyerId: string;
 
-    @IsNumber()
-    @Min(0)
-    amount: number;
+  @IsNumber()
+  @Min(0)
+  amount: number;
 }
