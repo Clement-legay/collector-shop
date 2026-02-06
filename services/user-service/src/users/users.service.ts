@@ -57,6 +57,7 @@ export class UsersService {
         this.metricsService.incrementUsersRegistered();
 
         // Remove password from response
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = user;
         return { user: userWithoutPassword as User, token };
     }
@@ -75,6 +76,7 @@ export class UsersService {
         // Increment metrics
         this.metricsService.incrementLogins();
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = user;
         return { user: userWithoutPassword as User, token };
     }
@@ -86,6 +88,7 @@ export class UsersService {
             throw new NotFoundException('User not found');
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = user;
         return userWithoutPassword as User;
     }
@@ -114,6 +117,7 @@ export class UsersService {
             },
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = user;
         return userWithoutPassword as User;
     }
@@ -121,6 +125,7 @@ export class UsersService {
     async findAll(): Promise<User[]> {
         const users = await this.userRepository.find();
         return users.map(user => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password, ...userWithoutPassword } = user;
             return userWithoutPassword as User;
         });
