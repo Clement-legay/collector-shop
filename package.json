@@ -17,5 +17,10 @@
     },
     "lint-staged": {
         "*.{js,ts,vue,json,md}": "echo 'Linting file...'"
+    },
+    "overrides": {
+        "@nestjs/cli": {
+            "glob": "^10.5.0"
+        }
     }
 }
