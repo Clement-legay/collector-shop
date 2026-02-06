@@ -8,29 +8,47 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # IMAGE_NAME: ${{ github.repository }} (will be set dynamically to handle casing)
 
 jobs:
-  lowercase-repo:
+  service-pipeline:
+    name: ${{ matrix.service }}
     runs-on: ubuntu-latest
-    outputs:
-      image_name: ${{ steps.lowercase.outputs.image_name }}
-    steps:
-      - id: lowercase
-        run: |
-          IMAGE_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: article-service
+            context: services/article-service
+            type: backend
+          - service: user-service
+            context: services/user-service
+            type: backend
+          - service: payment-service
+            context: services/payment-service
+            type: backend
+          - service: fraud-detection-service
+            context: services/fraud-detection-service
+            type: backend
+          - service: frontend
+            context: frontend
+            type: frontend
 
-  tests:
-    name: Tests & Quality
-    needs: lowercase-repo
-    env:
-      IMAGE_NAME: ${{ needs.lowercase-repo.outputs.image_name }}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Prepare Env
+        id: prep
+        run: |
+          # Lowercase the repo name for Docker image standards
+          IMAGE_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "valid_image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
+      # --- Quality & Tests ---
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -40,83 +58,24 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          cd ${{ matrix.context }}
           npm ci
-          cd frontend && npm ci
-          cd ../services/article-service && npm ci
-          cd ../user-service && npm ci
-          cd ../payment-service && npm ci
-          cd ../fraud-detection-service && npm ci
 
-      # Linting
-      - name: Run ESLint (Article Service)
-        run: cd services/article-service && npm run lint
-      - name: Run ESLint (User Service)
-        run: cd services/user-service && npm run lint
-      - name: Run ESLint (Payment Service)
-        run: cd services/payment-service && npm run lint
-      - name: Run ESLint (Fraud Service)
-        run: cd services/fraud-detection-service && npm run lint
-      # - name: Run ESLint (Frontend)
-      #   run: cd frontend && npm run lint
+      - name: Lint
+        run: |
+          cd ${{ matrix.context }}
+          npm run lint
 
-      # Unit Tests
-      - name: Run Tests (Article Service)
-        run: cd services/article-service && npm run test
-      - name: Run Tests (User Service)
-        run: cd services/user-service && npm run test
-      - name: Run Tests (Payment Service)
-        run: cd services/payment-service && npm run test
-      - name: Run Tests (Fraud Service)
-        run: cd services/fraud-detection-service && npm run test
-      - name: Run Tests (Frontend)
-        run: cd frontend && npm run test:unit || echo "No tests yet"
+      - name: Run Tests
+        run: |
+          cd ${{ matrix.context }}
+          if [ "${{ matrix.type }}" == "frontend" ]; then
+            npm run test:unit || echo "No unit tests found (skipping)"
+          else
+            npm run test
+          fi
 
-      # SonarQube (Optional - requires configuration)
-      # - name: SonarQube Scan
-      #   uses: sonarsource/sonarqube-scan-action@master
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      # Security Scan (Config files)
-      - name: Run Trivy vulnerability scanner (Config)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'config'
-          hide-progress: false
-          format: 'table'
-          exit-code: '0' # Don't fail for now
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-
-  build-and-push:
-    name: Build & Push
-    needs: [lowercase-repo, tests]
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ needs.lowercase-repo.outputs.image_name }}
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      matrix:
-        service: [article-service, user-service, payment-service, fraud-detection-service, frontend]
-        include:
-          - service: article-service
-            context: services/article-service
-          - service: user-service
-            context: services/user-service
-          - service: payment-service
-            context: services/payment-service
-          - service: fraud-detection-service
-            context: services/fraud-detection-service
-          - service: frontend
-            context: frontend
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
+      # --- Build & Push ---
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -124,18 +83,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.service }}
+          images: ${{ env.REGISTRY }}/${{ steps.prep.outputs.valid_image_name }}/${{ matrix.service }}
           tags: |
             type=sha,format=long
             type=ref,event=branch
-            type=ref,event=pr
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.context }}
@@ -143,10 +101,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Run Trivy scanner (Image)
+      - name: Trivy Scan (Image)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ steps.prep.outputs.valid_image_name }}/${{ matrix.service }}:${{ github.sha }}
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
@@ -154,7 +112,7 @@ jobs:
 
   deploy:
     name: Update Manifests
-    needs: build-and-push
+    needs: service-pipeline
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -166,27 +124,19 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Request Kustomize
-        uses: imranismail/setup-kustomize@v2
-
       - name: Update Kubernetes manifests
         run: |
           cd infrastructure/kubernetes/services
           
-          # We don't use Kustomize strictly here, we just use sed for simplicity if kustomize files aren't set up perfectly
-          # But let's try to be cleaner. Since we didn't setup kustomization.yaml, we'll use sed.
-          
-          SERVICES="article-service user-service payment-service fraud-detection-service frontend"
-          IMAGE_PREFIX="${{ env.REGISTRY }}/${{ github.repository_owner }}"
+          # Compute valid prefix (lowercase) matches the one used in build
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_PREFIX="${{ env.REGISTRY }}/$REPO_LOWER"
           TAG="sha-${{ github.sha }}"
            
-          # Note: The 'sha-' prefix is added by docker/metadata-action default behavior for type=sha
+          SERVICES="article-service user-service payment-service fraud-detection-service frontend"
           
           for SERVICE in $SERVICES; do
             echo "Updating $SERVICE to $TAG"
-            # Since manifests use local tags by default, simply replace the whole image line
-            # We match 'image: .*service-name.*'
-            
             sed -i "s|image: .*$SERVICE.*|image: $IMAGE_PREFIX/$SERVICE:$TAG|g" $SERVICE.yaml || true
           done
 
@@ -196,7 +146,6 @@ jobs:
           git config --global user.email 'actions@github.com'
           git add infrastructure/kubernetes/services/*.yaml
           
-          # Only commit if there are changes
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
