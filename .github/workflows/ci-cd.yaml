@@ -8,11 +8,24 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # IMAGE_NAME: ${{ github.repository }} (will be set dynamically to handle casing)
 
 jobs:
+  lowercase-repo:
+    runs-on: ubuntu-latest
+    outputs:
+      image_name: ${{ steps.lowercase.outputs.image_name }}
+    steps:
+      - id: lowercase
+        run: |
+          IMAGE_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
   tests:
     name: Tests & Quality
+    needs: lowercase-repo
+    env:
+      IMAGE_NAME: ${{ needs.lowercase-repo.outputs.image_name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -78,8 +91,12 @@ jobs:
 
   build-and-push:
     name: Build & Push
-    needs: tests
+  build-and-push:
+    name: Build & Push
+    needs: [lowercase-repo, tests]
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ needs.lowercase-repo.outputs.image_name }}
     permissions:
       contents: read
       packages: write
