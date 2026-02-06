@@ -27,6 +27,8 @@ spec:
           env:
             - name: COLLECTOR_ZIPKIN_HTTP_PORT
               value: "9411"
+            - name: QUERY_BASE_PATH
+              value: "/jaeger"
 ---
 apiVersion: v1
 kind: Service

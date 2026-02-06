@@ -43,6 +43,8 @@ const logout = () => {
   padding: 1rem 2rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 100;
 }
 
 .nav-brand a {
@@ -89,5 +91,7 @@ const logout = () => {
   min-height: calc(100vh - 80px);
   padding: 2rem;
   background: #f5f7fa;
+  position: relative;
+  z-index: 1;
 }
 </style>

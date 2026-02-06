@@ -47,14 +47,14 @@ spec:
                 name: fraud-detection-service
                 port:
                   number: 3004
-          - path: /jaeger(/|$)(.*)
+          - path: /()(jaeger(/|$).*)
             pathType: ImplementationSpecific
             backend:
               service:
                 name: jaeger
                 port:
                   number: 16686
-          - path: /grafana(/|$)(.*)
+          - path: /()(grafana(/|$).*)
             pathType: ImplementationSpecific
             backend:
               service:
