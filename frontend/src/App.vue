@@ -1,19 +1,23 @@
 <template>
   <div id="app">
     <nav class="navbar">
-      <div class="nav-brand">
-        <router-link to="/">🏛️ Collector.shop</router-link>
-      </div>
-      <div class="nav-links">
-        <router-link to="/catalog">Catalogue</router-link>
-        <router-link to="/publish" v-if="isAuthenticated">Publier</router-link>
-        <router-link to="/admin/fraud" v-if="isAdmin">Admin</router-link>
-        <router-link to="/login" v-if="!isAuthenticated">Connexion</router-link>
-        <button v-else @click="logout" class="logout-btn">Déconnexion</button>
+      <div class="container navbar-content">
+        <div class="nav-brand">
+          <router-link to="/">[ Collector.shop ]</router-link>
+        </div>
+        <div class="nav-links">
+          <router-link to="/catalog">Catalogue</router-link>
+          <router-link to="/publish" v-if="isAuthenticated">Publier</router-link>
+          <router-link to="/admin/fraud" v-if="isAdmin">Admin</router-link>
+          <router-link to="/login" v-if="!isAuthenticated" class="btn btn-secondary btn-sm">Connexion</router-link>
+          <button v-else @click="logout" class="btn btn-secondary btn-sm">Déconnexion</button>
+        </div>
       </div>
     </nav>
     <main class="main-content">
-      <router-view />
+      <div class="container">
+        <router-view />
+      </div>
     </main>
   </div>
 </template>
@@ -37,61 +41,59 @@ const logout = () => {
 
 <style scoped>
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  position: relative;
+  background: white;
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.5rem 0;
+  position: sticky;
+  top: 0;
   z-index: 100;
 }
 
+.navbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .nav-brand a {
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-main);
   text-decoration: none;
+  letter-spacing: -0.05em;
 }
 
 .nav-links {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
   align-items: center;
 }
 
 .nav-links a {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-light);
   text-decoration: none;
+  font-size: 0.9rem;
   font-weight: 500;
-  transition: color 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.2s;
 }
 
 .nav-links a:hover,
 .nav-links a.router-link-active {
-  color: white;
+  color: var(--text-main);
 }
 
-.logout-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.3s;
-}
-
-.logout-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
 }
 
 .main-content {
   min-height: calc(100vh - 80px);
-  padding: 2rem;
-  background: #f5f7fa;
-  position: relative;
-  z-index: 1;
+  padding: 3rem 0;
+  background: white;
 }
 </style>
