@@ -8,6 +8,7 @@
         "build": "vite build",
         "preview": "vite preview",
         "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix",
+        "test:unit": "echo 'No unit tests yet'",
         "format": "prettier --write src/"
     },
     "dependencies": {
