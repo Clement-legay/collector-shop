@@ -7,7 +7,7 @@
         "services/*"
     ],
     "scripts": {
-        "prepare": "husky",
+        "prepare": "if [ -z \"$CI\" ]; then husky; fi",
         "test": "npm run test --workspaces --if-present",
         "lint": "npm run lint --workspaces --if-present"
     },
