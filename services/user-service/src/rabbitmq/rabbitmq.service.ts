@@ -4,8 +4,8 @@ import * as amqp from 'amqplib';
 
 @Injectable()
 export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
-    private connection: amqp.Connection | null = null;
-    private channel: amqp.Channel | null = null;
+    private connection: any = null;
+    private channel: any = null;
     private readonly logger = new Logger(RabbitmqService.name);
     private readonly exchange: string;
 
@@ -23,8 +23,12 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 
     private async connect() {
         try {
-            const url = this.configService.get<string>('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672');
-            this.connection = await amqp.connect(url);
+            const host = this.configService.get<string>('RABBITMQ_HOST', 'localhost');
+            const port = this.configService.get<number>('RABBITMQ_AMQP_PORT', 5672);
+            const user = this.configService.get<string>('RABBITMQ_USER', 'guest');
+            const pass = this.configService.get<string>('RABBITMQ_PASS', 'guest');
+            const url = this.configService.get<string>('RABBITMQ_URL', `amqp://${user}:${pass}@${host}:${port}`);
+            this.connection = await amqp.connect(url) as any;
             this.channel = await this.connection.createChannel();
 
             // Declare exchange
@@ -44,7 +48,7 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
                 await this.channel.close();
             }
             if (this.connection) {
-                await this.connection.close();
+                await (this.connection as any).close();
             }
             this.logger.log('Disconnected from RabbitMQ');
         } catch (error) {

@@ -28,6 +28,8 @@
         "pg": "^8.11.0",
         "amqplib": "^0.10.3",
         "amqp-connection-manager": "^4.1.14",
+        "@nestjs/axios": "^3.0.0",
+        "axios": "^1.4.0",
         "prom-client": "^15.0.0",
         "jaeger-client": "^3.19.0",
         "opentracing": "^0.14.7",

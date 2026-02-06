@@ -9,6 +9,14 @@ data:
     CREATE DATABASE user_db;
     CREATE DATABASE payment_db;
     CREATE DATABASE fraud_db;
+    \c article_db;
+    CREATE SCHEMA IF NOT EXISTS articles;
+    \c user_db;
+    CREATE SCHEMA IF NOT EXISTS users;
+    \c payment_db;
+    CREATE SCHEMA IF NOT EXISTS payments;
+    \c fraud_db;
+    CREATE SCHEMA IF NOT EXISTS fraud;
     GRANT ALL PRIVILEGES ON DATABASE article_db TO collector;
     GRANT ALL PRIVILEGES ON DATABASE user_db TO collector;
     GRANT ALL PRIVILEGES ON DATABASE payment_db TO collector;

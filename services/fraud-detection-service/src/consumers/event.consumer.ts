@@ -30,8 +30,8 @@ interface PurchaseCompletedEvent {
 
 @Injectable()
 export class EventConsumer implements OnModuleInit, OnModuleDestroy {
-    private connection: amqp.Connection | null = null;
-    private channel: amqp.Channel | null = null;
+    private connection: any = null;
+    private channel: any = null;
     private readonly logger = new Logger(EventConsumer.name);
 
     // In-memory purchase tracking cache
@@ -66,11 +66,15 @@ export class EventConsumer implements OnModuleInit, OnModuleDestroy {
 
     private async connect() {
         try {
-            const url = this.configService.get<string>('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672');
+            const host = this.configService.get<string>('RABBITMQ_HOST', 'localhost');
+            const port = this.configService.get<number>('RABBITMQ_AMQP_PORT', 5672);
+            const user = this.configService.get<string>('RABBITMQ_USER', 'guest');
+            const pass = this.configService.get<string>('RABBITMQ_PASS', 'guest');
+            const url = this.configService.get<string>('RABBITMQ_URL', `amqp://${user}:${pass}@${host}:${port}`);
             const exchange = this.configService.get<string>('RABBITMQ_EXCHANGE', 'collector.events');
             const queueName = this.configService.get<string>('RABBITMQ_QUEUE', 'fraud-detection-queue');
 
-            this.connection = await amqp.connect(url);
+            this.connection = await amqp.connect(url) as any;
             this.channel = await this.connection.createChannel();
 
             // Ensure exchange exists
@@ -83,7 +87,7 @@ export class EventConsumer implements OnModuleInit, OnModuleDestroy {
             await this.channel.bindQueue(queue.queue, exchange, '#');
 
             // Start consuming events
-            await this.channel.consume(queue.queue, async (msg) => {
+            await this.channel.consume(queue.queue, async (msg: any) => {
                 if (msg) {
                     try {
                         await this.handleMessage(msg);
@@ -105,7 +109,7 @@ export class EventConsumer implements OnModuleInit, OnModuleDestroy {
     private async disconnect() {
         try {
             if (this.channel) await this.channel.close();
-            if (this.connection) await this.connection.close();
+            if (this.connection) await (this.connection as any).close();
         } catch (error) {
             this.logger.error('Error disconnecting', error);
         }

@@ -37,9 +37,9 @@ spec:
             - name: RABBITMQ_HOST
               value: "rabbitmq"
             - name: RABBITMQ_USER
-              value: "guest"
+              value: "collector"
             - name: RABBITMQ_PASS
-              value: "guest"
+              value: "collector_password"
             - name: JAEGER_AGENT_HOST
               value: "jaeger"
           resources:
