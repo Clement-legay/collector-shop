@@ -41,6 +41,7 @@ data:
     }
   rabbitmq.conf: |
       load_definitions = /etc/rabbitmq/definitions.json
+      management.path_prefix = /rabbitmq
 
 ---
 apiVersion: v1

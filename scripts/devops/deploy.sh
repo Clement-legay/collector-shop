@@ -8,6 +8,10 @@ echo "Vérification de l'installation d'ArgoCD..."
 kubectl create namespace argocd 2>/dev/null || true
 kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
+echo "🔧 Configuration d'ArgoCD pour autoriser les connexions HTTP (insecure)..."
+kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge -p '{"data":{"server.insecure":"true"}}'
+kubectl rollout restart deployment argocd-server -n argocd
+
 echo "⏳ Attente qu'ArgoCD soit prêt..."
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
 

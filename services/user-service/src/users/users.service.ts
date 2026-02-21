@@ -78,6 +78,10 @@ export class UsersService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
+    if (!user.isActive) {
+      throw new UnauthorizedException("Account has been banned");
+    }
+
     const token = this.generateToken(user);
 
     // Increment metrics
@@ -142,6 +146,38 @@ export class UsersService {
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword as User;
     });
+  }
+
+  async ban(id: string): Promise<User> {
+    const user = await this.findById(id);
+    user.isActive = false;
+    await this.userRepository.save(user);
+
+    await this.rabbitmqService.publish("user.banned", {
+      eventType: "UserBanned",
+      timestamp: new Date().toISOString(),
+      data: {
+        userId: user.id,
+      },
+    });
+
+    return user;
+  }
+
+  async unban(id: string): Promise<User> {
+    const user = await this.findById(id);
+    user.isActive = true;
+    await this.userRepository.save(user);
+
+    await this.rabbitmqService.publish("user.unbanned", {
+      eventType: "UserUnbanned",
+      timestamp: new Date().toISOString(),
+      data: {
+        userId: user.id,
+      },
+    });
+
+    return user;
   }
 
   private generateToken(user: User): string {

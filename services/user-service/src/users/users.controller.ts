@@ -44,4 +44,14 @@ export class UsersController {
   ) {
     return this.usersService.update(id, updateUserDto);
   }
+
+  @Post(":id/ban")
+  async ban(@Param("id", ParseUUIDPipe) id: string) {
+    return this.usersService.ban(id);
+  }
+
+  @Post(":id/unban")
+  async unban(@Param("id", ParseUUIDPipe) id: string) {
+    return this.usersService.unban(id);
+  }
 }

@@ -61,7 +61,7 @@ spec:
                 name: grafana
                 port:
                   number: 3000
-          - path: /rabbitmq(/|$)(.*)
+          - path: /()(rabbitmq(/|$).*)
             pathType: ImplementationSpecific
             backend:
               service:
