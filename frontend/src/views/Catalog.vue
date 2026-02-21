@@ -106,6 +106,7 @@ onMounted(() => {
 
 <style scoped>
 .catalog-header {
+  background-color: red;
   display: flex;
   justify-content: space-between;
   align-items: center;
