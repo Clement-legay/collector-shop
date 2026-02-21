@@ -7,10 +7,10 @@
         </div>
         <div class="nav-links">
           <router-link to="/catalog">Catalogue</router-link>
-          <router-link to="/publish" v-if="isAuthenticated">Publier</router-link>
+          <router-link to="/publish" v-if="isSeller">Publier</router-link>
           <router-link to="/admin/fraud" v-if="isAdmin">Admin</router-link>
           <router-link to="/login" v-if="!isAuthenticated" class="btn btn-secondary btn-sm">Connexion</router-link>
-          <button v-else @click="logout" class="btn btn-secondary btn-sm">Déconnexion</button>
+          <router-link to="/dashboard" v-else class="btn btn-secondary btn-sm">Mon Compte</router-link>
         </div>
       </div>
     </nav>
@@ -24,19 +24,20 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+// import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 
-const router = useRouter()
+// const router = useRouter()
 const authStore = useAuthStore()
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const isAdmin = computed(() => authStore.user?.role === 'admin')
+const isSeller = computed(() => authStore.user?.role === 'seller')
 
-const logout = () => {
-  authStore.logout()
-  router.push('/login')
-}
+// const logout = () => {
+//   authStore.logout()
+//   router.push('/')
+// }
 </script>
 
 <style scoped>

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: ghcr.io/clement-legay/collector-shop/payment-service:sha-e5c34a3c7b57ab0b2fcee6876e277f45692db545
+          image: collector/payment-service:local
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3003
@@ -42,6 +42,8 @@ spec:
               value: "collector_password"
             - name: JAEGER_AGENT_HOST
               value: "jaeger"
+            - name: ARTICLE_SERVICE_URL
+              value: "http://article-service:3001"
           resources:
             requests:
               cpu: "100m"

@@ -8,13 +8,18 @@ import {
 } from "./entities/fraud-alert.entity";
 import { MetricsService } from "../metrics/metrics.service";
 
+import { FraudProfile } from "./entities/fraud-profile.entity";
+
 @Injectable()
 export class FraudService {
   private readonly logger = new Logger(FraudService.name);
+  private readonly HIGH_RISK_THRESHOLD = 50;
 
   constructor(
     @InjectRepository(FraudAlert)
     private readonly alertRepository: Repository<FraudAlert>,
+    @InjectRepository(FraudProfile)
+    private readonly profileRepository: Repository<FraudProfile>,
     private readonly metricsService: MetricsService,
   ) {}
 
@@ -42,7 +47,54 @@ export class FraudService {
       `🚨 FRAUD ALERT [${severity.toUpperCase()}] - ${alertType}: ${JSON.stringify(details)}`,
     );
 
+    // Update User Score if userId is present and preventing infinite loops
+    if (userId && alertType !== AlertType.HIGH_RISK_USER) {
+      await this.updateUserScore(userId, severity);
+    }
+
     return alert;
+  }
+
+  private async updateUserScore(userId: string, severity: AlertSeverity) {
+    let profile = await this.profileRepository.findOne({ where: { userId } });
+
+    if (!profile) {
+      profile = this.profileRepository.create({ userId, score: 0 });
+    }
+
+    let increment = 0;
+    switch (severity) {
+      case AlertSeverity.ORANGE:
+        increment = 10;
+        break;
+      case AlertSeverity.RED:
+        increment = 50; // Immediate flag if Red
+        break;
+    }
+
+    if (increment > 0) {
+      profile.score += increment;
+      await this.profileRepository.save(profile);
+      this.logger.log(
+        `User ${userId} fraud score updated: ${profile.score} (+${increment})`,
+      );
+
+      if (profile.score >= this.HIGH_RISK_THRESHOLD) {
+        this.logger.warn(
+          `🚨 USER ${userId} IS HIGH RISK (Score: ${profile.score})`,
+        );
+        await this.createAlert(
+          AlertType.HIGH_RISK_USER,
+          AlertSeverity.RED,
+          userId,
+          undefined,
+          {
+            score: profile.score,
+            message: "User exceeded fraud score threshold",
+          },
+        );
+      }
+    }
   }
 
   async findAll(): Promise<FraudAlert[]> {

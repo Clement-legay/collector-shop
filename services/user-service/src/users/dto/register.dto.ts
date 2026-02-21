@@ -19,6 +19,10 @@ export class RegisterDto {
   @MinLength(2)
   name: string;
 
+  @IsString()
+  @IsOptional()
+  address?: string;
+
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;

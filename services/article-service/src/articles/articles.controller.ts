@@ -8,10 +8,14 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
-  ParseEnumPipe,
 } from "@nestjs/common";
 import { ArticlesService } from "./articles.service";
-import { CreateArticleDto, UpdateArticleDto, UpdatePriceDto } from "./dto";
+import {
+  CreateArticleDto,
+  UpdateArticleDto,
+  UpdatePriceDto,
+  GetArticlesDto,
+} from "./dto";
 import { ArticleStatus } from "./entities/article.entity";
 
 @Controller("articles")
@@ -24,12 +28,8 @@ export class ArticlesController {
   }
 
   @Get()
-  async findAll(
-    @Query("status", new ParseEnumPipe(ArticleStatus, { optional: true }))
-    status?: ArticleStatus,
-    @Query("sellerId") sellerId?: string,
-  ) {
-    return this.articlesService.findAll({ status, sellerId });
+  async findAll(@Query() query: GetArticlesDto) {
+    return this.articlesService.findAll(query);
   }
 
   @Get(":id")

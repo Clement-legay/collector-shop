@@ -23,15 +23,32 @@ const routes = [
         component: () => import('../views/Catalog.vue')
     },
     {
+        path: '/dashboard',
+        name: 'dashboard',
+        component: () => import('../views/Dashboard.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/article/:id',
         name: 'article-detail',
         component: () => import('../views/ArticleDetail.vue')
     },
     {
+        path: '/seller/:id',
+        name: 'seller-profile',
+        component: () => import('../views/SellerProfile.vue')
+    },
+    {
         path: '/publish',
         name: 'publish',
         component: () => import('../views/PublishArticle.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresSeller: true }
+    },
+    {
+        path: '/publish/:id',
+        name: 'edit-article',
+        component: () => import('../views/PublishArticle.vue'),
+        meta: { requiresAuth: true, requiresSeller: true }
     },
     {
         path: '/admin/fraud',
@@ -54,6 +71,8 @@ router.beforeEach((to, from, next) => {
         next('/login')
     } else if (to.meta.requiresAdmin && authStore.user?.role !== 'admin') {
         next('/catalog')
+    } else if (to.meta.requiresSeller && authStore.user?.role !== 'seller') {
+        next('/dashboard')
     } else {
         next()
     }

@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { PaymentsService } from "./payments.service";
 import { InitiatePaymentDto } from "./dto";
+import { Transaction } from "./entities/transaction.entity";
 
 @Controller("payments")
 export class PaymentsController {
@@ -31,6 +32,19 @@ export class PaymentsController {
   @Get("user/:userId")
   async findByUser(@Param("userId", ParseUUIDPipe) userId: string) {
     return this.paymentsService.findByUser(userId);
+  }
+
+  @Get("seller/:userId")
+  async findBySeller(@Param("userId", ParseUUIDPipe) userId: string) {
+    return this.paymentsService.findSalesBySeller(userId);
+  }
+
+  @Post(":id/validate")
+  async validate(
+    @Param("id") id: string,
+    @Body("approved") approved: boolean,
+  ): Promise<Transaction> {
+    return this.paymentsService.validateTransaction(id, approved);
   }
 
   @Post(":id/complete")

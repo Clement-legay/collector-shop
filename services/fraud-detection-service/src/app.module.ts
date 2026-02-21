@@ -5,6 +5,8 @@ import { FraudModule } from "./fraud/fraud.module";
 import { ConsumersModule } from "./consumers/consumers.module";
 import { MetricsModule } from "./metrics/metrics.module";
 import { FraudAlert } from "./fraud/entities/fraud-alert.entity";
+import { FraudProfile } from "./fraud/entities/fraud-profile.entity";
+import { PurchaseEvent } from "./fraud/entities/purchase-event.entity";
 import { HealthController } from "./health.controller";
 
 @Module({
@@ -24,7 +26,7 @@ import { HealthController } from "./health.controller";
         password: configService.get("DATABASE_PASSWORD", "collector_password"),
         database: configService.get("DATABASE_NAME", "collector"),
         schema: configService.get("DATABASE_SCHEMA", "fraud"),
-        entities: [FraudAlert],
+        entities: [FraudAlert, FraudProfile, PurchaseEvent],
         synchronize: true,
         logging: ["error", "warn"],
       }),

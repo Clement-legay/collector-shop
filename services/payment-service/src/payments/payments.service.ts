@@ -62,10 +62,24 @@ export class PaymentsService {
     this.metricsService.incrementPaymentsInitiated();
     this.logger.log(`Payment initiated: ${transaction.id}`);
 
-    // 4. Simulate payment processing (2 seconds)
-    setTimeout(async () => {
-      await this.completePayment(transaction.id);
-    }, 2000);
+    // 4. Update article status to PENDING (Reserved)
+    const reserved = await this.articleClient.updateArticleStatus(
+      transaction.articleId,
+      "pending",
+    );
+
+    if (!reserved) {
+      this.logger.error(
+        `Failed to reserve article ${transaction.articleId}. Transaction ${transaction.id} aborted.`,
+      );
+      // Clean up failed transaction if needed or mark failed immediately
+      // For simplicity in this step, we assume success or handle failure.
+    }
+
+    // No auto-completion anymore. Waiting for seller validation.
+    this.logger.log(
+      `Payment initiated and waiting for validation: ${transaction.id}`,
+    );
 
     return transaction;
   }
@@ -117,6 +131,41 @@ export class PaymentsService {
     return transaction;
   }
 
+  async validateTransaction(
+    transactionId: string,
+    approved: boolean,
+  ): Promise<Transaction> {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id: transactionId },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException("Transaction not found");
+    }
+
+    if (transaction.status !== TransactionStatus.PENDING) {
+      throw new BadRequestException("Transaction is not pending validation");
+    }
+
+    if (approved) {
+      // Complete the payment
+      return this.completePayment(transactionId);
+    } else {
+      // Reject the payment
+      // Release the article
+      await this.articleClient.updateArticleStatus(
+        transaction.articleId,
+        "published",
+      );
+
+      transaction.status = TransactionStatus.CANCELLED;
+      await this.transactionRepository.save(transaction);
+
+      this.logger.log(`Payment rejected/cancelled: ${transactionId}`);
+      return transaction;
+    }
+  }
+
   async findOne(id: string): Promise<Transaction> {
     const transaction = await this.transactionRepository.findOne({
       where: { id },
@@ -132,6 +181,13 @@ export class PaymentsService {
   async findByUser(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.find({
       where: { buyerId: userId },
+      order: { createdAt: "DESC" },
+    });
+  }
+
+  async findSalesBySeller(sellerId: string): Promise<Transaction[]> {
+    return this.transactionRepository.find({
+      where: { sellerId },
       order: { createdAt: "DESC" },
     });
   }

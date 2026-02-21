@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ArticlesController } from "./articles.controller";
+// import { UploadController } from "./upload.controller";
 import { ArticlesService } from "./articles.service";
 import { Article } from "./entities/article.entity";
 import { RabbitmqModule } from "../rabbitmq/rabbitmq.module";

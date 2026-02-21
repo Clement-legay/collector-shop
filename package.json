@@ -8,8 +8,14 @@
     ],
     "scripts": {
         "prepare": "if [ -z \"$CI\" ]; then husky; fi",
+        "start": "bash scripts/devops/start-minikube.sh",
+        "dev": "bash scripts/devops/build-local.sh && bash scripts/devops/deploy-local.sh",
         "test": "npm run test --workspaces --if-present",
-        "lint": "npm run lint --workspaces --if-present"
+        "lint": "npm run lint --workspaces --if-present",
+        "seed": "node scripts/data/seed.js",
+        "simulate:fraud": "node scripts/data/simulate-fraud.js",
+        "test:load": "k6 run scripts/tests/load-test.js",
+        "reset": "bash scripts/devops/reset.sh"
     },
     "devDependencies": {
         "husky": "^9.0.0",

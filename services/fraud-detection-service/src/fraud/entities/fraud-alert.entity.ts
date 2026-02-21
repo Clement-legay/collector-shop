@@ -8,6 +8,7 @@ import {
 export enum AlertType {
   PRICE_VARIATION = "price_variation",
   SUSPICIOUS_PURCHASES = "suspicious_purchases",
+  HIGH_RISK_USER = "high_risk_user",
 }
 
 export enum AlertSeverity {

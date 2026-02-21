@@ -49,7 +49,9 @@ const formatPrice = (price) => {
 }
 
 const goToDetail = () => {
-  router.push(`/article/${props.article.id}`)
+  if (props.article && props.article.id) {
+    router.push({ name: 'article-detail', params: { id: props.article.id } })
+  }
 }
 </script>
 

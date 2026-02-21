@@ -2,7 +2,12 @@ import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Article, ArticleStatus } from "./entities/article.entity";
-import { CreateArticleDto, UpdateArticleDto, UpdatePriceDto } from "./dto";
+import {
+  CreateArticleDto,
+  UpdateArticleDto,
+  UpdatePriceDto,
+  GetArticlesDto,
+} from "./dto";
 import { RabbitmqService } from "../rabbitmq/rabbitmq.service";
 import { MetricsService } from "../metrics/metrics.service";
 
@@ -44,10 +49,7 @@ export class ArticlesService {
     return article;
   }
 
-  async findAll(filters?: {
-    status?: ArticleStatus;
-    sellerId?: string;
-  }): Promise<Article[]> {
+  async findAll(filters?: GetArticlesDto): Promise<Article[]> {
     const query = this.articleRepository.createQueryBuilder("article");
 
     if (filters?.status) {
@@ -57,6 +59,25 @@ export class ArticlesService {
     if (filters?.sellerId) {
       query.andWhere("article.sellerId = :sellerId", {
         sellerId: filters.sellerId,
+      });
+    }
+
+    if (filters?.search) {
+      query.andWhere(
+        "(LOWER(article.title) LIKE LOWER(:search) OR LOWER(article.description) LIKE LOWER(:search))",
+        { search: `%${filters.search}%` },
+      );
+    }
+
+    if (filters?.minPrice !== undefined) {
+      query.andWhere("article.price >= :minPrice", {
+        minPrice: filters.minPrice,
+      });
+    }
+
+    if (filters?.maxPrice !== undefined) {
+      query.andWhere("article.price <= :maxPrice", {
+        maxPrice: filters.maxPrice,
       });
     }
 

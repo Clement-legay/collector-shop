@@ -9,6 +9,7 @@ import {
 export enum ArticleStatus {
   DRAFT = "draft",
   PUBLISHED = "published",
+  PENDING = "pending",
   SOLD = "sold",
   DELETED = "deleted",
 }

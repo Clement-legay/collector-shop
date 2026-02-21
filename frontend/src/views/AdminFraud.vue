@@ -22,6 +22,7 @@
         <option value="">Tous les types</option>
         <option value="price_variation">Variation de prix</option>
         <option value="suspicious_purchases">Achats suspects</option>
+        <option value="high_risk_user">Utilisateurs à haut risque</option>
       </select>
 
       <select v-model="filterSeverity" class="form-control filter-select">
@@ -68,6 +69,12 @@
             <p><strong>Acheteur ID:</strong> {{ alert.userId }}</p>
             <p><strong>Nombre d'achats:</strong> {{ alert.details?.purchaseCount }} en {{ alert.details?.windowMinutes }} min</p>
           </div>
+
+          <div v-else-if="alert.alertType === 'high_risk_user'">
+            <p><strong>Acheteur ID:</strong> {{ alert.userId }}</p>
+            <p><strong>Score de Fraude:</strong> {{ alert.details?.score }}</p>
+            <p><strong>Message:</strong> {{ alert.details?.message }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -102,7 +109,8 @@ const redCount = computed(() =>
 const formatType = (type) => {
   const types = {
     price_variation: '💰 Variation de prix',
-    suspicious_purchases: '🛒 Achats suspects'
+    suspicious_purchases: '🛒 Achats suspects',
+    high_risk_user: '🚫 Utilisateur à haut risque'
   }
   return types[type] || type
 }

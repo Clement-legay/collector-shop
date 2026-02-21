@@ -5,9 +5,12 @@ import {
   Logger,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, MoreThanOrEqual, LessThan } from "typeorm";
 import * as amqp from "amqplib";
 import { FraudService } from "../fraud/fraud.service";
 import { AlertType, AlertSeverity } from "../fraud/entities/fraud-alert.entity";
+import { PurchaseEvent } from "../fraud/entities/purchase-event.entity";
 import { MetricsService } from "../metrics/metrics.service";
 
 interface PriceChangedEvent {
@@ -21,14 +24,13 @@ interface PriceChangedEvent {
   };
 }
 
-interface PurchaseCompletedEvent {
+interface PaymentInitiatedEvent {
   eventType: string;
   timestamp: string;
   data: {
     transactionId: string;
     articleId: string;
     buyerId: string;
-    sellerId: string;
     amount: number;
   };
 }
@@ -38,9 +40,6 @@ export class EventConsumer implements OnModuleInit, OnModuleDestroy {
   private connection: any = null;
   private channel: any = null;
   private readonly logger = new Logger(EventConsumer.name);
-
-  // In-memory purchase tracking cache
-  private readonly purchaseCache = new Map<string, number[]>();
 
   // Thresholds (configurable)
   private readonly priceOrangeThreshold: number;
@@ -53,6 +52,8 @@ export class EventConsumer implements OnModuleInit, OnModuleDestroy {
     private readonly configService: ConfigService,
     private readonly fraudService: FraudService,
     private readonly metricsService: MetricsService,
+    @InjectRepository(PurchaseEvent)
+    private readonly purchaseEventRepository: Repository<PurchaseEvent>,
   ) {
     this.priceOrangeThreshold = this.configService.get<number>(
       "PRICE_CHANGE_ORANGE_THRESHOLD",
@@ -155,15 +156,25 @@ export class EventConsumer implements OnModuleInit, OnModuleDestroy {
     this.metricsService.incrementEventsProcessed(
       content.eventType || routingKey,
     );
-    this.logger.debug(`Received event: ${routingKey}`);
+    this.logger.debug(
+      `Received event: ${routingKey}, eventType: ${content.eventType}`,
+    );
 
     // Route to appropriate handler
     switch (content.eventType) {
       case "PriceChanged":
+        this.logger.log(`🔍 Processing PriceChanged event`);
         await this.handlePriceChanged(content as PriceChangedEvent);
         break;
+      case "PaymentInitiated":
+        this.logger.log(
+          `🔍 Processing PaymentInitiated event for buyer: ${content.data?.buyerId}`,
+        );
+        await this.handlePaymentActivity(content as PaymentInitiatedEvent);
+        break;
       case "PurchaseCompleted":
-        await this.handlePurchaseCompleted(content as PurchaseCompletedEvent);
+        // We track attempts via PaymentInitiated, so we can ignore this for velocity checks
+        // or use it for other logic if needed.
         break;
       default:
         this.logger.debug(`Ignoring event type: ${content.eventType}`);
@@ -209,34 +220,61 @@ export class EventConsumer implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Rule 2: Rapid purchases detection
-   * - > 5 purchases in 10 min → ORANGE
-   * - > 10 purchases in 10 min → RED
+   * Rule 2: Rapid purchases detection (Attempts)
+   * - >= 5 purchases in 10 min → ORANGE
+   * - >= 10 purchases in 10 min → RED
    */
-  private async handlePurchaseCompleted(event: PurchaseCompletedEvent) {
+  private async handlePaymentActivity(event: PaymentInitiatedEvent) {
     const { buyerId, transactionId, articleId, amount } = event.data;
-    const now = Date.now();
+    const now = new Date();
 
-    // Get or initialize purchase timestamps for this buyer
-    let timestamps = this.purchaseCache.get(buyerId) || [];
+    this.logger.log(`📊 Velocity check for buyer ${buyerId}`);
 
-    // Clean up old timestamps (older than window)
-    timestamps = timestamps.filter((ts) => now - ts < this.purchaseWindowMs);
+    // Save this purchase event to database
+    const purchaseEvent = this.purchaseEventRepository.create({
+      buyerId,
+      transactionId,
+      articleId,
+      amount,
+    });
+    await this.purchaseEventRepository.save(purchaseEvent);
 
-    // Add current timestamp
-    timestamps.push(now);
-    this.purchaseCache.set(buyerId, timestamps);
+    // Calculate cutoff time for the window
+    const windowStart = new Date(now.getTime() - this.purchaseWindowMs);
 
-    const count = timestamps.length;
+    // Count purchases in the time window from database
+    const count = await this.purchaseEventRepository.count({
+      where: {
+        buyerId,
+        createdAt: MoreThanOrEqual(windowStart) as any,
+      },
+    });
+
+    this.logger.log(
+      `  Total count from DB: ${count}, Orange threshold: ${this.purchaseOrangeThreshold}, Red threshold: ${this.purchaseRedThreshold}`,
+    );
+
     let severity: AlertSeverity = AlertSeverity.GREEN;
 
-    if (count > this.purchaseRedThreshold) {
+    // Use >= to trigger ON the threshold
+    if (count >= this.purchaseRedThreshold) {
       severity = AlertSeverity.RED;
-    } else if (count > this.purchaseOrangeThreshold) {
+      this.logger.warn(
+        `  🚨 RED ALERT TRIGGERED (count: ${count} >= ${this.purchaseRedThreshold})`,
+      );
+    } else if (count >= this.purchaseOrangeThreshold) {
       severity = AlertSeverity.ORANGE;
+      this.logger.warn(
+        `  ⚠️ ORANGE ALERT TRIGGERED (count: ${count} >= ${this.purchaseOrangeThreshold})`,
+      );
+    } else {
+      this.logger.log(
+        `  ✅ No alert (count: ${count} < ${this.purchaseOrangeThreshold})`,
+      );
     }
 
     if (severity !== AlertSeverity.GREEN) {
+      this.logger.log(`  Creating fraud alert...`);
       await this.fraudService.createAlert(
         AlertType.SUSPICIOUS_PURCHASES,
         severity,
@@ -249,6 +287,15 @@ export class EventConsumer implements OnModuleInit, OnModuleDestroy {
           amount,
         },
       );
+    }
+
+    // Clean up old events periodically (older than window)
+    if (Math.random() < 0.1) {
+      // 10% chance to clean up
+      const cleanupCutoff = new Date(now.getTime() - this.purchaseWindowMs);
+      await this.purchaseEventRepository.delete({
+        createdAt: LessThan(cleanupCutoff) as any,
+      });
     }
   }
 }
