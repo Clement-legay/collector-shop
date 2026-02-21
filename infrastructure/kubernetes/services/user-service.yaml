@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: collector/user-service:local
+          image: ghcr.io/clement-legay/collector-shop/user-service:sha-8560731571bd8c3ac98ab1e4c84d0db8142e37a0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3002
