@@ -19,9 +19,8 @@ data:
       ],
       "users": [
         {
-          "name": "guest",
-          "password_hash": "BM8X5Xn2uJzvKxJ+JjQ8X6Z8Y7Z8", 
-          "hashing_algorithm": "rabbit_password_hashing_sha256",
+          "name": "collector",
+          "password": "collector_password",
           "tags": "administrator"
         }
       ],
@@ -32,7 +31,7 @@ data:
       ],
       "permissions": [
         {
-          "user": "guest",
+          "user": "collector",
           "vhost": "/",
           "configure": ".*",
           "write": ".*",
