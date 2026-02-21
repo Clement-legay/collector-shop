@@ -15,7 +15,18 @@ kubectl apply -f infrastructure/kubernetes/namespaces/
 kubectl apply -R -f infrastructure/kubernetes/databases/
 kubectl apply -R -f infrastructure/kubernetes/observability/
 kubectl apply -R -f infrastructure/kubernetes/services/
+# 4. Ingress Rules
 kubectl apply -R -f infrastructure/kubernetes/ingress/
+
+# 5. Installer ArgoCD
+echo "Installation and configuration of ArgoCD..."
+kubectl create namespace argocd 2>/dev/null || true
+kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+echo "Waiting for ArgoCD to be ready..."
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
+
+# 6. Apply ArgoCD Apps
 kubectl apply -R -f infrastructure/kubernetes/argocd/ 2>/dev/null || true
 
 echo "Restarting deployments to pick up new local images..."

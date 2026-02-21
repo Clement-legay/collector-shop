@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/<GITHUB_USERNAME>/collector-shop
+    repoURL: https://github.com/Clement-legay/collector-shop.git
     targetRevision: HEAD
     path: infrastructure/kubernetes
     directory:
