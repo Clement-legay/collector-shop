@@ -65,6 +65,30 @@ async function main() {
         }
         console.log(`\nCreated ${articles.length} articles.`);
 
+        // 2.5 Simulate Excessive Price Changes
+        console.log(`\nSimulating Excessive Price Changes...`);
+        for (let i = 0; i < 2; i++) {
+            const art = articles[i];
+            const newPrice = art.price * 5; // multiply by 5 to trigger variation alert
+
+            res = await fetch(`${API_URL}/articles/${art.id}/price`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sellerToken}`
+                },
+                body: JSON.stringify({ price: newPrice })
+            });
+
+            if (res.ok) {
+                console.log(`Changed price of "${art.title}" to ${newPrice}€ ✅`);
+                art.price = newPrice; // update local object so the buyer buys at new price
+            } else {
+                console.log(`Failed to change price of "${art.title}": ${res.status}`);
+            }
+            await delay(200);
+        }
+
         // 3. Create & Login Buyer
         console.log(`\nCreating Buyer...`);
         res = await fetch(`${API_URL}/users/register`, {
