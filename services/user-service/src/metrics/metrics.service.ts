@@ -17,22 +17,24 @@ export class MetricsService {
     this.usersRegisteredCounter = new Counter({
       name: "users_registered_total",
       help: "Total number of users registered",
+      labelNames: ["email"],
       registers: [this.registry],
     });
 
     this.loginsCounter = new Counter({
       name: "logins_total",
       help: "Total number of user logins",
+      labelNames: ["email"],
       registers: [this.registry],
     });
   }
 
-  incrementUsersRegistered(): void {
-    this.usersRegisteredCounter.inc();
+  incrementUsersRegistered(email: string): void {
+    this.usersRegisteredCounter.inc({ email });
   }
 
-  incrementLogins(): void {
-    this.loginsCounter.inc();
+  incrementLogins(email: string): void {
+    this.loginsCounter.inc({ email });
   }
 
   async getMetrics(): Promise<string> {

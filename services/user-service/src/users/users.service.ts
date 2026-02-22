@@ -21,7 +21,7 @@ export class UsersService {
     private readonly configService: ConfigService,
     private readonly rabbitmqService: RabbitmqService,
     private readonly metricsService: MetricsService,
-  ) {}
+  ) { }
 
   async register(
     registerDto: RegisterDto,
@@ -61,7 +61,7 @@ export class UsersService {
     });
 
     // Increment metrics
-    this.metricsService.incrementUsersRegistered();
+    this.metricsService.incrementUsersRegistered(user.email);
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -85,7 +85,7 @@ export class UsersService {
     const token = this.generateToken(user);
 
     // Increment metrics
-    this.metricsService.incrementLogins();
+    this.metricsService.incrementLogins(user.email);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;

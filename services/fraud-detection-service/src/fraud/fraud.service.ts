@@ -21,7 +21,7 @@ export class FraudService {
     @InjectRepository(FraudProfile)
     private readonly profileRepository: Repository<FraudProfile>,
     private readonly metricsService: MetricsService,
-  ) {}
+  ) { }
 
   async createAlert(
     alertType: AlertType,
@@ -41,7 +41,13 @@ export class FraudService {
     await this.alertRepository.save(alert);
 
     // Increment Prometheus counter
-    this.metricsService.incrementFraudAlerts(alertType, severity);
+    this.metricsService.incrementFraudAlerts(
+      alertType,
+      severity,
+      userId,
+      articleId,
+      details ? JSON.stringify(details) : undefined,
+    );
 
     this.logger.warn(
       `🚨 FRAUD ALERT [${severity.toUpperCase()}] - ${alertType}: ${JSON.stringify(details)}`,

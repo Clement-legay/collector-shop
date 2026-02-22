@@ -15,7 +15,7 @@ export class MetricsService {
     this.fraudAlertsCounter = new Counter({
       name: "fraud_alerts_total",
       help: "Total number of fraud alerts by type and severity",
-      labelNames: ["type", "severity"],
+      labelNames: ["type", "severity", "user_id", "article_id", "details"],
       registers: [this.registry],
     });
 
@@ -27,8 +27,20 @@ export class MetricsService {
     });
   }
 
-  incrementFraudAlerts(type: AlertType, severity: AlertSeverity): void {
-    this.fraudAlertsCounter.inc({ type, severity });
+  incrementFraudAlerts(
+    type: AlertType,
+    severity: AlertSeverity,
+    userId?: string,
+    articleId?: string,
+    details?: string,
+  ): void {
+    this.fraudAlertsCounter.inc({
+      type,
+      severity,
+      user_id: userId || "unknown",
+      article_id: articleId || "unknown",
+      details: details || "none",
+    });
   }
 
   incrementEventsProcessed(eventType: string): void {

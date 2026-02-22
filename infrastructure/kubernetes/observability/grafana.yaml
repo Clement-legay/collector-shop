@@ -167,6 +167,22 @@ data:
           "targets": [
             { "expr": "sum(rate(events_processed_total[5m])) by (event_type)", "legendFormat": "{{event_type}}" }
           ]
+        },
+        {
+          "title": "Registration Logs (Emails)",
+          "type": "table",
+          "gridPos": { "x": 0, "y": 14, "w": 8, "h": 7 },
+          "targets": [
+            { "expr": "users_registered_total > 0", "format": "table", "instant": true }
+          ]
+        },
+        {
+          "title": "Fraud Alert Logs (Details)",
+          "type": "table",
+          "gridPos": { "x": 8, "y": 14, "w": 16, "h": 7 },
+          "targets": [
+            { "expr": "fraud_alerts_total > 0", "format": "table", "instant": true }
+          ]
         }
       ]
     }
