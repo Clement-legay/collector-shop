@@ -37,6 +37,10 @@ spec:
           volumeMounts:
             - name: grafana-datasources
               mountPath: /etc/grafana/provisioning/datasources
+            - name: grafana-dashboards-config
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
             - name: grafana-storage
               mountPath: /var/lib/grafana
 
@@ -44,6 +48,12 @@ spec:
         - name: grafana-datasources
           configMap:
             name: grafana-datasources
+        - name: grafana-dashboards-config
+          configMap:
+            name: grafana-dashboards-config
+        - name: grafana-dashboards
+          configMap:
+            name: grafana-dashboards
         - name: grafana-storage
           persistentVolumeClaim:
             claimName: grafana-pvc
@@ -91,3 +101,72 @@ spec:
       name: http
   selector:
     app: grafana
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-config
+  namespace: collector
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        options:
+          path: /var/lib/grafana/dashboards
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: collector
+data:
+  collector-dashboard.json: |
+    {
+      "title": "Collector Microservices",
+      "schemaVersion": 36,
+      "refresh": "5s",
+      "panels": [
+        {
+          "title": "Total Users Registered",
+          "type": "stat",
+          "gridPos": { "x": 0, "y": 0, "w": 8, "h": 6 },
+          "targets": [ { "expr": "sum(users_registered_total)" } ]
+        },
+        {
+          "title": "Total Payments Completed",
+          "type": "stat",
+          "gridPos": { "x": 8, "y": 0, "w": 8, "h": 6 },
+          "targets": [ { "expr": "sum(payments_completed_total)" } ]
+        },
+        {
+          "title": "Total Articles Created",
+          "type": "stat",
+          "gridPos": { "x": 16, "y": 0, "w": 8, "h": 6 },
+          "targets": [ { "expr": "sum(articles_created_total)" } ]
+        },
+        {
+          "title": "Fraud Alerts",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 6, "w": 12, "h": 8 },
+          "targets": [
+            { "expr": "sum(rate(fraud_alerts_total[5m])) by (severity)", "legendFormat": "{{severity}}" }
+          ]
+        },
+        {
+          "title": "Events Processed",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 6, "w": 12, "h": 8 },
+          "targets": [
+            { "expr": "sum(rate(events_processed_total[5m])) by (event_type)", "legendFormat": "{{event_type}}" }
+          ]
+        }
+      ]
+    }
