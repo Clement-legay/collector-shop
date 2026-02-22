@@ -86,6 +86,9 @@ describe("FraudService", () => {
       expect(mockMetricsService.incrementFraudAlerts).toHaveBeenCalledWith(
         AlertType.SUSPICIOUS_PURCHASES,
         AlertSeverity.ORANGE,
+        "user-1",
+        "article-1",
+        "{\"count\":5}"
       );
       expect(mockProfileRepository.findOne).toHaveBeenCalledWith({
         where: { userId: "user-1" },
