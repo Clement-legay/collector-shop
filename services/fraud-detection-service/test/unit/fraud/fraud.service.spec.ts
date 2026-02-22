@@ -88,7 +88,7 @@ describe("FraudService", () => {
         AlertSeverity.ORANGE,
         "user-1",
         "article-1",
-        "{\"count\":5}"
+        '{"count":5}',
       );
       expect(mockProfileRepository.findOne).toHaveBeenCalledWith({
         where: { userId: "user-1" },

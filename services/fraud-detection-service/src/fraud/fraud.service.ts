@@ -21,7 +21,7 @@ export class FraudService {
     @InjectRepository(FraudProfile)
     private readonly profileRepository: Repository<FraudProfile>,
     private readonly metricsService: MetricsService,
-  ) { }
+  ) {}
 
   async createAlert(
     alertType: AlertType,

@@ -21,7 +21,7 @@ export class UsersService {
     private readonly configService: ConfigService,
     private readonly rabbitmqService: RabbitmqService,
     private readonly metricsService: MetricsService,
-  ) { }
+  ) {}
 
   async register(
     registerDto: RegisterDto,
