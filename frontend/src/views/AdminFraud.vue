@@ -87,28 +87,30 @@
           </div>
 
           <!-- Actions Panel -->
-          <div class="alert-actions" v-if="alert.user">
+          <div class="alert-actions" v-if="alert.user && alert.alertType !== 'price_variation'">
              <div class="user-status-badge">
                <span v-if="alert.user.isActive" class="badge badge-success">Actif</span>
                <span v-else class="badge badge-danger">Banni</span>
              </div>
              
+             <!-- Bouton initial Bannir/Débannir -->
              <button 
-                v-if="alert.user.isActive" 
-                @click="toggleBan(alert.user)" 
-                class="btn btn-secondary danger-hover btn-sm"
+                type="button"
+                v-if="!alert.user.confirming"
+                @click.stop.prevent="alert.user.confirming = true" 
+                class="btn btn-sm"
+                :class="alert.user.isActive ? 'btn-secondary danger-hover' : 'btn-secondary success-hover'"
                 :disabled="alert.user.loading"
              >
-                {{ alert.user.loading ? '...' : 'Bannir' }}
+                {{ alert.user.loading ? '...' : (alert.user.isActive ? 'Bannir' : 'Débannir') }}
              </button>
-             <button 
-                v-else 
-                @click="toggleBan(alert.user)" 
-                class="btn btn-secondary success-hover btn-sm"
-                :disabled="alert.user.loading"
-             >
-               {{ alert.user.loading ? '...' : 'Débannir' }}
-             </button>
+
+             <!-- Boutons de confirmation inline -->
+             <div v-if="alert.user.confirming" class="inline-confirm">
+                <span class="confirm-text">Confirmer ?</span>
+                <button type="button" class="btn btn-sm btn-danger" @click.stop.prevent="toggleBan(alert.user)">Oui</button>
+                <button type="button" class="btn btn-sm btn-secondary" @click.stop.prevent="alert.user.confirming = false">Non</button>
+             </div>
           </div>
         </div>
       </div>
@@ -232,12 +234,8 @@ const fetchAlerts = async () => {
 const toggleBan = async (user) => {
   if (!user) return;
   const action = user.isActive ? 'ban' : 'unban';
-  const confirmMsg = user.isActive 
-    ? `Voulez-vous vraiment bannir l'utilisateur ${user.name} ?`
-    : `Voulez-vous vraiment débannir l'utilisateur ${user.name} ?`;
-    
-  if (!confirm(confirmMsg)) return;
   
+  user.confirming = false;
   user.loading = true;
   try {
     const res = await api.post(`/api/users/${user.id}/${action}`);
@@ -381,6 +379,23 @@ onMounted(() => {
   background-color: var(--danger-color);
   color: white;
   border-color: var(--danger-color);
+}
+
+.inline-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  background-color: var(--bg-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.confirm-text {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  font-weight: 500;
 }
 
 .loading-state,
