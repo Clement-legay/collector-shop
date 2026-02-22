@@ -23,11 +23,14 @@ echo "Installation and configuration of ArgoCD..."
 kubectl create namespace argocd 2>/dev/null || true
 kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
+echo "Patching ArgoCD repo-server to prevent CrashLoopBackOff..."
+kubectl patch deployment argocd-repo-server -n argocd --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/initContainers/0/args/0", "value": "/bin/cp --update=none /usr/local/bin/argocd /var/run/argocd/argocd && /bin/ln -sf /var/run/argocd/argocd /var/run/argocd/argocd-cmp-server"}]'
 echo "Waiting for ArgoCD to be ready..."
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
 
 # 6. Apply ArgoCD Apps
-kubectl apply -R -f infrastructure/kubernetes/argocd/ 2>/dev/null || true
+# Disable ArgoCD auto-sync for the collector app during local development so it doesn't overwrite local images with GitHub ones
+kubectl patch application collector -n argocd --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}' 2>/dev/null || true
 
 echo "Restarting deployments to pick up new local images..."
 kubectl rollout restart deployment -n collector

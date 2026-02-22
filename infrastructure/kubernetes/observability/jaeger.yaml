@@ -5,6 +5,8 @@ metadata:
   namespace: collector
   labels:
     app: jaeger
+    app.kubernetes.io/name: jaeger
+    app.kubernetes.io/instance: collector
 spec:
   replicas: 1
   selector:
@@ -14,6 +16,8 @@ spec:
     metadata:
       labels:
         app: jaeger
+        app.kubernetes.io/name: jaeger
+        app.kubernetes.io/instance: collector
     spec:
       containers:
         - name: jaeger

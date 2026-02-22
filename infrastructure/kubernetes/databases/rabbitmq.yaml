@@ -76,6 +76,8 @@ spec:
     metadata:
       labels:
         app: rabbitmq
+        app.kubernetes.io/name: rabbitmq
+        app.kubernetes.io/instance: collector
     spec:
       containers:
         - name: rabbitmq

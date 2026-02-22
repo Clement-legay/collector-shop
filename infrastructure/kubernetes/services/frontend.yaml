@@ -5,8 +5,11 @@ metadata:
   namespace: collector
   labels:
     app: frontend
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: collector
 spec:
   replicas: 2
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       app: frontend
@@ -14,10 +17,12 @@ spec:
     metadata:
       labels:
         app: frontend
+        app.kubernetes.io/name: frontend
+        app.kubernetes.io/instance: collector
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/clement-legay/collector-shop/frontend:sha-aabc42116c7d6ec7cf6e257e3f7a8f42ee6a1657
+          image: ghcr.io/clement-legay/collector-shop/frontend:sha-ebee21f2901bf9f62e21f614df13b908b27ba701
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80

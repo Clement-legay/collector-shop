@@ -10,8 +10,34 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  setup:
+    name: Setup and Cache Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            */node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
   service-pipeline:
     name: ${{ matrix.service }}
+    needs: setup
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -53,13 +79,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
 
-      - name: Install Dependencies
-        run: |
-          cd ${{ matrix.context }}
-          npm ci
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            */node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Lint
         run: |
@@ -107,6 +135,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Trivy Scan (Image)
         uses: aquasecurity/trivy-action@master

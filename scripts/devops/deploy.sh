@@ -8,6 +8,9 @@ echo "Vérification de l'installation d'ArgoCD..."
 kubectl create namespace argocd 2>/dev/null || true
 kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
+echo "Patching ArgoCD repo-server to prevent CrashLoopBackOff..."
+kubectl patch deployment argocd-repo-server -n argocd --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/initContainers/0/args/0", "value": "/bin/cp --update=none /usr/local/bin/argocd /var/run/argocd/argocd && /bin/ln -sf /var/run/argocd/argocd /var/run/argocd/argocd-cmp-server"}]'
+
 echo "🔧 Configuration d'ArgoCD pour autoriser les connexions HTTP (insecure)..."
 kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge -p '{"data":{"server.insecure":"true"}}'
 kubectl rollout restart deployment argocd-server -n argocd

@@ -30,6 +30,8 @@ metadata:
   namespace: collector
   labels:
     app: prometheus
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/instance: collector
 spec:
   replicas: 1
   strategy:
@@ -41,6 +43,8 @@ spec:
     metadata:
       labels:
         app: prometheus
+        app.kubernetes.io/name: prometheus
+        app.kubernetes.io/instance: collector
     spec:
       containers:
         - name: prometheus

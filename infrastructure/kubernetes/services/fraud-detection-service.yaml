@@ -5,8 +5,11 @@ metadata:
   namespace: collector
   labels:
     app: fraud-detection-service
+    app.kubernetes.io/name: fraud-detection-service
+    app.kubernetes.io/instance: collector
 spec:
   replicas: 2
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       app: fraud-detection-service
@@ -14,10 +17,12 @@ spec:
     metadata:
       labels:
         app: fraud-detection-service
+        app.kubernetes.io/name: fraud-detection-service
+        app.kubernetes.io/instance: collector
     spec:
       containers:
         - name: fraud-detection-service
-          image: ghcr.io/clement-legay/collector-shop/fraud-detection-service:sha-aabc42116c7d6ec7cf6e257e3f7a8f42ee6a1657
+          image: ghcr.io/clement-legay/collector-shop/fraud-detection-service:sha-ebee21f2901bf9f62e21f614df13b908b27ba701
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3004

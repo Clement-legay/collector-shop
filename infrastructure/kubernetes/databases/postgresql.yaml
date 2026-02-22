@@ -52,6 +52,8 @@ spec:
     metadata:
       labels:
         app: postgresql
+        app.kubernetes.io/name: postgresql
+        app.kubernetes.io/instance: collector
     spec:
       containers:
         - name: postgresql
