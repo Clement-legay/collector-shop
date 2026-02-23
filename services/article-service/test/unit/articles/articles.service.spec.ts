@@ -136,5 +136,76 @@ describe("ArticlesService", () => {
       );
       expect(result).toEqual(articles);
     });
+    it("should build query and return articles with filters", async () => {
+      const articles = [{ id: "1", title: "Test" }];
+      mockQueryBuilder.getMany.mockResolvedValue(articles);
+
+      const result = await service.findAll({
+        status: ArticleStatus.PUBLISHED,
+        sellerId: "123",
+        search: "Hello",
+        minPrice: 10,
+        maxPrice: 100,
+      });
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith("article.sellerId = :sellerId", expect.any(Object));
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(expect.stringContaining("LIKE"), expect.any(Object));
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith("article.price >= :minPrice", expect.any(Object));
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith("article.price <= :maxPrice", expect.any(Object));
+      expect(result).toEqual(articles);
+    });
+  });
+
+  describe("findOne", () => {
+    it("should throw NotFoundException if not found", async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      await expect(service.findOne("1")).rejects.toThrow(NotFoundException);
+    });
+
+    it("should return the article", async () => {
+      mockRepository.findOne.mockResolvedValue({ id: "1" });
+      expect(await service.findOne("1")).toEqual({ id: "1" });
+    });
+  });
+
+  describe("update", () => {
+    it("should call updatePrice if price changed", async () => {
+      mockRepository.findOne.mockResolvedValue({ id: "1", price: 100 });
+      jest.spyOn(service, "updatePrice").mockResolvedValue({ id: "1", price: 200 } as any);
+
+      await service.update("1", { price: 200 });
+      expect(service.updatePrice).toHaveBeenCalledWith("1", { price: 200 });
+    });
+
+    it("should update object and emit event", async () => {
+      const article = { id: "1", title: "old", price: 100 };
+      mockRepository.findOne.mockResolvedValue(article);
+      mockRepository.save.mockResolvedValue({ ...article });
+
+      await service.update("1", { title: "new" });
+      expect(mockRepository.save).toHaveBeenCalled();
+      expect(mockRabbitmqService.publish).toHaveBeenCalledWith("article.updated", expect.anything());
+    });
+  });
+
+  describe("updateStatus", () => {
+    it("should update status", async () => {
+      mockRepository.findOne.mockResolvedValue({ id: "1" });
+      mockRepository.save.mockResolvedValue({ id: "1", status: ArticleStatus.SOLD });
+
+      const res = await service.updateStatus("1", ArticleStatus.SOLD);
+      expect(res.status).toBe(ArticleStatus.SOLD);
+    });
+  });
+
+  describe("remove", () => {
+    it("should soft delete", async () => {
+      const article = { id: "1", status: ArticleStatus.PUBLISHED };
+      mockRepository.findOne.mockResolvedValue(article);
+      mockRepository.save.mockResolvedValue({ ...article, status: ArticleStatus.DELETED });
+
+      await service.remove("1");
+      expect(article.status).toBe(ArticleStatus.DELETED);
+    });
   });
 });

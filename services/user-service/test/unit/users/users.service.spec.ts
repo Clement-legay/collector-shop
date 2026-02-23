@@ -56,6 +56,39 @@ describe("UsersService", () => {
     expect(service).toBeDefined();
   });
 
+  describe("register", () => {
+    it("should throw ConflictException if user exists", async () => {
+      mockRepository.findOne.mockResolvedValue({ id: "1" });
+      await expect(
+        service.register({ email: "test@test.com", password: "p", name: "n" }),
+      ).rejects.toThrow("Email already registered");
+    });
+
+    it("should create a user, emit event, metrics, and return user without password", async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      const user = {
+        id: "1",
+        email: "test@test.com",
+        password: "p",
+        role: UserRole.BUYER,
+        createdAt: new Date(),
+      };
+      mockRepository.create.mockReturnValue(user);
+      mockRepository.save.mockResolvedValue(user);
+
+      const result = await service.register({
+        email: "test@test.com",
+        password: "p",
+        name: "n",
+      });
+
+      expect(result.token).toBe("mocked-token");
+      expect(result.user).not.toHaveProperty("password");
+      expect(mockRabbitmqService.publish).toHaveBeenCalled();
+      expect(mockMetricsService.incrementUsersRegistered).toHaveBeenCalled();
+    });
+  });
+
   describe("login", () => {
     it("should throw an UnauthorizedException if user is not found", async () => {
       mockRepository.findOne.mockResolvedValue(null);
@@ -130,6 +163,43 @@ describe("UsersService", () => {
           eventType: "UserUnbanned",
           data: { userId: "1" },
         }),
+      );
+    });
+  });
+
+  describe("findById and findAll", () => {
+    it("should throw NotFoundException if user not found", async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      await expect(service.findById("1")).rejects.toThrow("User not found");
+    });
+
+    it("findAll should return users without passwords", async () => {
+      mockRepository.find.mockResolvedValue([{ id: "1", password: "p" }]);
+      const result = await service.findAll();
+      expect(result[0]).not.toHaveProperty("password");
+    });
+  });
+
+  describe("update", () => {
+    it("should throw NotFoundException if user not found", async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      await expect(service.update("1", { name: "Test" })).rejects.toThrow(
+        "User not found",
+      );
+    });
+
+    it("should update user and publish event", async () => {
+      const user = { id: "1", name: "Old", password: "p", role: UserRole.BUYER };
+      mockRepository.findOne.mockResolvedValue(user);
+      mockRepository.save.mockResolvedValue({ ...user, name: "New" });
+
+      const result = await service.update("1", { name: "New" });
+
+      expect(result).not.toHaveProperty("password");
+      expect(mockRepository.save).toHaveBeenCalled();
+      expect(mockRabbitmqService.publish).toHaveBeenCalledWith(
+        "user.updated",
+        expect.anything(),
       );
     });
   });

@@ -136,6 +136,20 @@ describe("FraudService", () => {
       const res = await service.findAll();
       expect(res).toBe(expected);
     });
+
+    it("findByType should filter alerts", async () => {
+      const expected = [{ id: "1", alertType: AlertType.HIGH_RISK_USER }];
+      mockAlertRepository.find.mockResolvedValue(expected);
+      const res = await service.findByType(AlertType.HIGH_RISK_USER);
+      expect(res).toBe(expected);
+    });
+
+    it("findBySeverity should filter alerts", async () => {
+      const expected = [{ id: "1", severity: AlertSeverity.RED }];
+      mockAlertRepository.find.mockResolvedValue(expected);
+      const res = await service.findBySeverity(AlertSeverity.RED);
+      expect(res).toBe(expected);
+    });
   });
 
   describe("getStats", () => {

@@ -39,6 +39,46 @@ describe("UsersController", () => {
     expect(controller).toBeDefined();
   });
 
+  describe("register", () => {
+    it("should call register on the service", async () => {
+      const dto = { email: "test@test.com", password: "p", name: "n" };
+      mockUsersService.register.mockResolvedValue({ user: dto, token: "t" });
+      const result = await controller.register(dto);
+      expect(result).toEqual({ user: dto, token: "t" });
+      expect(service.register).toHaveBeenCalledWith(dto);
+    });
+  });
+
+  describe("login", () => {
+    it("should call login on the service", async () => {
+      const dto = { email: "test@test.com", password: "p" };
+      mockUsersService.login.mockResolvedValue({ user: dto, token: "t" });
+      const result = await controller.login(dto);
+      expect(result).toEqual({ user: dto, token: "t" });
+      expect(service.login).toHaveBeenCalledWith(dto);
+    });
+  });
+
+  describe("findAll", () => {
+    it("should return users array", async () => {
+      mockUsersService.findAll.mockResolvedValue([]);
+      expect(await controller.findAll()).toEqual([]);
+      expect(service.findAll).toHaveBeenCalled();
+    });
+  });
+
+  describe("update", () => {
+    it("should call update on the service", async () => {
+      const mockUser = { id: "1", email: "updated@test.com" };
+      mockUsersService.update.mockResolvedValue(mockUser);
+      const dto = { name: "Updated" };
+
+      const result = await controller.update("1", dto);
+      expect(result).toEqual(mockUser);
+      expect(service.update).toHaveBeenCalledWith("1", dto);
+    });
+  });
+
   describe("findById", () => {
     it("should return a user", async () => {
       const mockUser = { id: "1", email: "test@test.com", name: "Test User" };

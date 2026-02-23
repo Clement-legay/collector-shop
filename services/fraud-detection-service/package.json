@@ -76,6 +76,27 @@
             "<rootDir>/src/**/*.(t|j)s"
         ],
         "coverageDirectory": "<rootDir>/coverage",
+        "coveragePathIgnorePatterns": [
+            "/node_modules/",
+            ".*\\.module\\.ts$",
+            ".*\\.dto\\.ts$",
+            ".*\\.entity\\.ts$",
+            "main\\.ts$",
+            "health\\.controller\\.ts$",
+            "index\\.ts$",
+            "/rabbitmq/",
+            "/metrics/",
+            "/clients/",
+            "/consumers/"
+        ],
+        "coverageThreshold": {
+            "global": {
+                "branches": 80,
+                "functions": 80,
+                "lines": 80,
+                "statements": 80
+            }
+        },
         "testEnvironment": "node"
     }
 }

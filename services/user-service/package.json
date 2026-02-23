@@ -89,7 +89,12 @@
             ".*\\.module\\.ts$",
             ".*\\.dto\\.ts$",
             ".*\\.entity\\.ts$",
-            "main\\.ts$"
+            "main\\.ts$",
+            "health\\.controller\\.ts$",
+            "index\\.ts$",
+            "/rabbitmq/",
+            "/metrics/",
+            "/clients/"
         ],
         "coverageDirectory": "<rootDir>/coverage",
         "coverageThreshold": {

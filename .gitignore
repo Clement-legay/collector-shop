@@ -32,3 +32,8 @@ coverage/
 
 # Test results
 scripts/tests/results.json
+
+# Documents
+*.pptx
+*.ppt
+*.docx

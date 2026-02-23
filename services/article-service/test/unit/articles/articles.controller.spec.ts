@@ -80,4 +80,26 @@ describe("ArticlesController", () => {
       );
     });
   });
+
+  describe("Other Endpoints", () => {
+    it("findOne", async () => {
+      mockArticlesService.findOne.mockResolvedValue({ id: "1" });
+      expect(await controller.findOne("1")).toEqual({ id: "1" });
+    });
+
+    it("update", async () => {
+      mockArticlesService.update.mockResolvedValue({ id: "1" });
+      expect(await controller.update("1", { title: "upd" })).toEqual({ id: "1" });
+    });
+
+    it("updatePrice", async () => {
+      mockArticlesService.updatePrice.mockResolvedValue({ id: "1" });
+      expect(await controller.updatePrice("1", { price: 50 })).toEqual({ id: "1" });
+    });
+
+    it("remove", async () => {
+      mockArticlesService.remove.mockResolvedValue(undefined);
+      expect(await controller.remove("1")).toBeUndefined();
+    });
+  });
 });

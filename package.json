@@ -12,6 +12,7 @@
         "dev": "bash scripts/devops/build-local.sh && bash scripts/devops/deploy-local.sh",
         "deploy": "bash scripts/devops/deploy.sh",
         "test": "npm run test --workspaces --if-present",
+        "test:cov": "npm run test:cov --workspaces --if-present",
         "lint": "npm run lint --workspaces --if-present",
         "seed": "node scripts/data/seed.js",
         "simulate:fraud": "node scripts/data/simulate-fraud.js",

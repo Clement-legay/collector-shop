@@ -59,4 +59,31 @@ describe("PaymentsController", () => {
       expect(service.validateTransaction).toHaveBeenCalledWith("1", true);
     });
   });
+
+  describe("Queries and Complete", () => {
+    it("findAll", async () => {
+      mockPaymentsService.findAll.mockResolvedValue([]);
+      expect(await controller.findAll()).toEqual([]);
+    });
+
+    it("findOne", async () => {
+      mockPaymentsService.findOne.mockResolvedValue({ id: "1" });
+      expect(await controller.findOne("1")).toEqual({ id: "1" });
+    });
+
+    it("findByUser", async () => {
+      mockPaymentsService.findByUser.mockResolvedValue([]);
+      expect(await controller.findByUser("user1")).toEqual([]);
+    });
+
+    it("findBySeller", async () => {
+      mockPaymentsService.findSalesBySeller.mockResolvedValue([]);
+      expect(await controller.findBySeller("seller1")).toEqual([]);
+    });
+
+    it("completePayment", async () => {
+      mockPaymentsService.completePayment.mockResolvedValue({ id: "1" });
+      expect(await controller.completePayment("1")).toEqual({ id: "1" });
+    });
+  });
 });

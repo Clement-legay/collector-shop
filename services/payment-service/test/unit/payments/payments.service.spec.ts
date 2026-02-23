@@ -145,5 +145,61 @@ describe("PaymentsService", () => {
         "published",
       );
     });
+
+    it("should throw BadRequestException if transaction is not pending", async () => {
+      const txn = {
+        id: "txn-1",
+        status: TransactionStatus.COMPLETED,
+        articleId: "1",
+      };
+      mockTransactionRepository.findOne.mockResolvedValue(txn);
+      await expect(service.validateTransaction("txn-1", true)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it("should set transaction to FAILED if article update fails during completion", async () => {
+      const txn = {
+        id: "txn-1",
+        status: TransactionStatus.PENDING,
+        articleId: "1",
+      };
+      mockTransactionRepository.findOne.mockResolvedValue(txn);
+      mockArticleClient.updateArticleStatus.mockResolvedValue(false);
+
+      const result = await service.validateTransaction("txn-1", true);
+
+      expect(result.status).toBe(TransactionStatus.FAILED);
+      expect(mockTransactionRepository.save).toHaveBeenCalled();
+    });
+  });
+
+  describe("Queries", () => {
+    it("findOne should return a transaction or throw NotFoundException", async () => {
+      mockTransactionRepository.findOne.mockResolvedValueOnce(null);
+      await expect(service.findOne("1")).rejects.toThrow(NotFoundException);
+
+      mockTransactionRepository.findOne.mockResolvedValueOnce({ id: "1" });
+      const res = await service.findOne("1");
+      expect(res.id).toBe("1");
+    });
+
+    it("findByUser should return transactions", async () => {
+      mockTransactionRepository.find.mockResolvedValue([{ id: "1" }]);
+      const res = await service.findByUser("user1");
+      expect(res).toHaveLength(1);
+    });
+
+    it("findSalesBySeller should return transactions", async () => {
+      mockTransactionRepository.find.mockResolvedValue([{ id: "1" }]);
+      const res = await service.findSalesBySeller("seller1");
+      expect(res).toHaveLength(1);
+    });
+
+    it("findAll should return transactions", async () => {
+      mockTransactionRepository.find.mockResolvedValue([{ id: "1" }]);
+      const res = await service.findAll();
+      expect(res).toHaveLength(1);
+    });
   });
 });
