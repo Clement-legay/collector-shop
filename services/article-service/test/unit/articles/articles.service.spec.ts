@@ -148,10 +148,22 @@ describe("ArticlesService", () => {
         maxPrice: 100,
       });
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith("article.sellerId = :sellerId", expect.any(Object));
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(expect.stringContaining("LIKE"), expect.any(Object));
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith("article.price >= :minPrice", expect.any(Object));
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith("article.price <= :maxPrice", expect.any(Object));
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        "article.sellerId = :sellerId",
+        expect.any(Object),
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining("LIKE"),
+        expect.any(Object),
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        "article.price >= :minPrice",
+        expect.any(Object),
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        "article.price <= :maxPrice",
+        expect.any(Object),
+      );
       expect(result).toEqual(articles);
     });
   });
@@ -171,7 +183,9 @@ describe("ArticlesService", () => {
   describe("update", () => {
     it("should call updatePrice if price changed", async () => {
       mockRepository.findOne.mockResolvedValue({ id: "1", price: 100 });
-      jest.spyOn(service, "updatePrice").mockResolvedValue({ id: "1", price: 200 } as any);
+      jest
+        .spyOn(service, "updatePrice")
+        .mockResolvedValue({ id: "1", price: 200 } as any);
 
       await service.update("1", { price: 200 });
       expect(service.updatePrice).toHaveBeenCalledWith("1", { price: 200 });
@@ -184,14 +198,20 @@ describe("ArticlesService", () => {
 
       await service.update("1", { title: "new" });
       expect(mockRepository.save).toHaveBeenCalled();
-      expect(mockRabbitmqService.publish).toHaveBeenCalledWith("article.updated", expect.anything());
+      expect(mockRabbitmqService.publish).toHaveBeenCalledWith(
+        "article.updated",
+        expect.anything(),
+      );
     });
   });
 
   describe("updateStatus", () => {
     it("should update status", async () => {
       mockRepository.findOne.mockResolvedValue({ id: "1" });
-      mockRepository.save.mockResolvedValue({ id: "1", status: ArticleStatus.SOLD });
+      mockRepository.save.mockResolvedValue({
+        id: "1",
+        status: ArticleStatus.SOLD,
+      });
 
       const res = await service.updateStatus("1", ArticleStatus.SOLD);
       expect(res.status).toBe(ArticleStatus.SOLD);
@@ -202,7 +222,10 @@ describe("ArticlesService", () => {
     it("should soft delete", async () => {
       const article = { id: "1", status: ArticleStatus.PUBLISHED };
       mockRepository.findOne.mockResolvedValue(article);
-      mockRepository.save.mockResolvedValue({ ...article, status: ArticleStatus.DELETED });
+      mockRepository.save.mockResolvedValue({
+        ...article,
+        status: ArticleStatus.DELETED,
+      });
 
       await service.remove("1");
       expect(article.status).toBe(ArticleStatus.DELETED);

@@ -8,7 +8,7 @@ import {
 import { ArticleClient } from "../../../src/clients/article.client";
 import { RabbitmqService } from "../../../src/rabbitmq/rabbitmq.service";
 import { MetricsService } from "../../../src/metrics/metrics.service";
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, NotFoundException, Logger } from "@nestjs/common";
 
 describe("PaymentsService", () => {
   let service: PaymentsService;
@@ -159,6 +159,8 @@ describe("PaymentsService", () => {
     });
 
     it("should set transaction to FAILED if article update fails during completion", async () => {
+      const loggerSpy = jest.spyOn(Logger.prototype, "error").mockImplementation(() => { });
+
       const txn = {
         id: "txn-1",
         status: TransactionStatus.PENDING,
@@ -171,6 +173,8 @@ describe("PaymentsService", () => {
 
       expect(result.status).toBe(TransactionStatus.FAILED);
       expect(mockTransactionRepository.save).toHaveBeenCalled();
+
+      loggerSpy.mockRestore();
     });
   });
 

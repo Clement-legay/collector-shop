@@ -189,7 +189,12 @@ describe("UsersService", () => {
     });
 
     it("should update user and publish event", async () => {
-      const user = { id: "1", name: "Old", password: "p", role: UserRole.BUYER };
+      const user = {
+        id: "1",
+        name: "Old",
+        password: "p",
+        role: UserRole.BUYER,
+      };
       mockRepository.findOne.mockResolvedValue(user);
       mockRepository.save.mockResolvedValue({ ...user, name: "New" });
 
