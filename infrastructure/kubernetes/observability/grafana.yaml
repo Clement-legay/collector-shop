@@ -173,15 +173,23 @@ data:
           "type": "table",
           "gridPos": { "x": 0, "y": 14, "w": 8, "h": 7 },
           "targets": [
-            { "expr": "users_registered_total > 0", "format": "table", "instant": true }
+            { "expr": "max_over_time(users_registered_total[24h]) > 0", "format": "table", "instant": true }
+          ]
+        },
+        {
+          "title": "Login Logs (Emails)",
+          "type": "table",
+          "gridPos": { "x": 8, "y": 14, "w": 8, "h": 7 },
+          "targets": [
+            { "expr": "max_over_time(logins_total[24h]) > 0", "format": "table", "instant": true }
           ]
         },
         {
           "title": "Fraud Alert Logs (Details)",
           "type": "table",
-          "gridPos": { "x": 8, "y": 14, "w": 16, "h": 7 },
+          "gridPos": { "x": 16, "y": 14, "w": 8, "h": 7 },
           "targets": [
-            { "expr": "fraud_alerts_total > 0", "format": "table", "instant": true }
+            { "expr": "max_over_time(fraud_alerts_total[24h]) > 0", "format": "table", "instant": true }
           ]
         }
       ]
