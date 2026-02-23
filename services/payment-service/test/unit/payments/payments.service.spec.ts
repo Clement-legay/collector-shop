@@ -159,7 +159,9 @@ describe("PaymentsService", () => {
     });
 
     it("should set transaction to FAILED if article update fails during completion", async () => {
-      const loggerSpy = jest.spyOn(Logger.prototype, "error").mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(Logger.prototype, "error")
+        .mockImplementation(() => {});
 
       const txn = {
         id: "txn-1",
