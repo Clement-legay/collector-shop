@@ -27,7 +27,6 @@
         "*.{js,ts,vue,json,md}": "echo 'Linting file...'"
     },
     "overrides": {
-        "minimatch": "^10.2.2",
         "@nestjs/cli": {
             "glob": "^10.5.0"
         }
