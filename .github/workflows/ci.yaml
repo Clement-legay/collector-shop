@@ -145,7 +145,7 @@ jobs:
   codeql:
     name: CodeQL analysis
     runs-on: ubuntu-latest
-    needs: service-pipeline
+    needs: setup
     permissions:
       actions: read
       contents: read
@@ -175,7 +175,7 @@ jobs:
   update-manifests:
     name: Update Kubernetes manifests
     runs-on: ubuntu-latest
-    needs: codeql
+    needs: [service-pipeline, codeql]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write
