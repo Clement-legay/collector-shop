@@ -14,14 +14,14 @@ spec:
     kind: Deployment
     name: user-service
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 2
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 30
 
 ---
 apiVersion: autoscaling/v2
@@ -35,14 +35,14 @@ spec:
     kind: Deployment
     name: article-service
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 2
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 30
 
 ---
 apiVersion: autoscaling/v2
@@ -56,14 +56,14 @@ spec:
     kind: Deployment
     name: payment-service
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 2
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 30
 
 ---
 apiVersion: autoscaling/v2
@@ -77,11 +77,11 @@ spec:
     kind: Deployment
     name: fraud-detection-service
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 2
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 30
