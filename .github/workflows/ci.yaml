@@ -170,6 +170,21 @@ jobs:
         uses: github/codeql-action/analyze@v4
         with:
           category: /language:${{ matrix.language }}
+          output: sarif-results
+
+      - name: Fail on CodeQL findings
+        run: |
+          SARIF=$(ls sarif-results/*.sarif 2>/dev/null | head -1)
+          if [ -z "$SARIF" ]; then
+            echo "No SARIF file found, skipping check"
+            exit 0
+          fi
+          COUNT=$(jq '[.runs[].results[] | select(.level == "error" or .level == "warning")] | length' "$SARIF")
+          if [ "$COUNT" -gt 0 ]; then
+            echo "::error::CodeQL found $COUNT issue(s) — check the Security tab for details"
+            exit 1
+          fi
+          echo "✅ No CodeQL error/warning findings"
 
   # ─── Job 4 : Update K8s manifests with new image tags (main only) ─────────
   update-manifests:
