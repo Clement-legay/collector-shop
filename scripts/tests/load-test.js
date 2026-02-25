@@ -6,7 +6,7 @@ import { Rate, Trend, Counter } from 'k6/metrics';
 const errorRate = new Rate('errors');
 const catalogLatency = new Trend('catalog_latency', true);
 const authLatency = new Trend('auth_latency', true);
-const paymentLatency = new Trend('payment_latency', true);
+
 const fraudLatency = new Trend('fraud_latency', true);
 const successfulRequests = new Counter('successful_requests');
 
