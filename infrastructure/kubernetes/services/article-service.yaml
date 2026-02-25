@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: article-service
-          image: ghcr.io/clement-legay/collector-shop/article-service:sha-af84ecdd0447601e4de9b890c8844da5bcfc36dd
+          image: ghcr.io/clement-legay/collector-shop/article-service:sha-140a4788f1ce7b9e3412e6bb1eb036a6b7fa78c1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001
