@@ -1,5 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { Counter, Registry, collectDefaultMetrics } from "prom-client";
+import {
+  Counter,
+  Histogram,
+  Registry,
+  collectDefaultMetrics,
+} from "prom-client";
 
 @Injectable()
 export class MetricsService {
@@ -7,6 +12,7 @@ export class MetricsService {
   private readonly articlesCreatedCounter: Counter;
   private readonly articlesUpdatedCounter: Counter;
   private readonly priceChangesCounter: Counter;
+  private readonly requestDurationHistogram: Histogram;
 
   constructor() {
     this.registry = new Registry();
@@ -29,6 +35,15 @@ export class MetricsService {
       help: "Total number of price changes",
       registers: [this.registry],
     });
+
+    // HTTP Request duration histogram
+    this.requestDurationHistogram = new Histogram({
+      name: "http_request_duration_seconds",
+      help: "Duration of HTTP requests in seconds",
+      labelNames: ["method", "path", "status"],
+      registers: [this.registry],
+      buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5],
+    });
   }
 
   incrementArticlesCreated(): void {
@@ -41,6 +56,18 @@ export class MetricsService {
 
   incrementPriceChanges(): void {
     this.priceChangesCounter.inc();
+  }
+
+  recordRequestDuration(
+    method: string,
+    path: string,
+    status: string,
+    durationInSeconds: number,
+  ): void {
+    this.requestDurationHistogram.observe(
+      { method, path, status },
+      durationInSeconds,
+    );
   }
 
   async getMetrics(): Promise<string> {

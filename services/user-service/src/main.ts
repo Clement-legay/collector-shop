@@ -1,6 +1,8 @@
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
+import { MetricsInterceptor } from "./metrics/metrics.interceptor";
+import { MetricsService } from "./metrics/metrics.service";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +21,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Global Metrics Interceptor
+  const metricsService = app.get(MetricsService);
+  app.useGlobalInterceptors(new MetricsInterceptor(metricsService));
 
   const port = process.env.PORT || 3002;
   await app.listen(port);

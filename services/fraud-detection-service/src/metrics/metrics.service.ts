@@ -1,5 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { Counter, Registry, collectDefaultMetrics } from "prom-client";
+import {
+  Counter,
+  Histogram,
+  Registry,
+  collectDefaultMetrics,
+} from "prom-client";
 import { AlertType, AlertSeverity } from "../fraud/entities/fraud-alert.entity";
 
 @Injectable()
@@ -7,6 +12,7 @@ export class MetricsService {
   private readonly registry: Registry;
   private readonly fraudAlertsCounter: Counter;
   private readonly eventsProcessedCounter: Counter;
+  private readonly requestDurationHistogram: Histogram;
 
   constructor() {
     this.registry = new Registry();
@@ -24,6 +30,15 @@ export class MetricsService {
       help: "Total number of events processed",
       labelNames: ["event_type"],
       registers: [this.registry],
+    });
+
+    // HTTP Request duration histogram
+    this.requestDurationHistogram = new Histogram({
+      name: "http_request_duration_seconds",
+      help: "Duration of HTTP requests in seconds",
+      labelNames: ["method", "path", "status"],
+      registers: [this.registry],
+      buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5],
     });
   }
 
@@ -45,6 +60,18 @@ export class MetricsService {
 
   incrementEventsProcessed(eventType: string): void {
     this.eventsProcessedCounter.inc({ event_type: eventType });
+  }
+
+  recordRequestDuration(
+    method: string,
+    path: string,
+    status: string,
+    durationInSeconds: number,
+  ): void {
+    this.requestDurationHistogram.observe(
+      { method, path, status },
+      durationInSeconds,
+    );
   }
 
   async getMetrics(): Promise<string> {

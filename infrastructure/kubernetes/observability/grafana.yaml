@@ -191,6 +191,43 @@ data:
           "targets": [
             { "expr": "max_over_time(fraud_alerts_total[24h]) > 0", "format": "table", "instant": true }
           ]
+        },
+        {
+          "title": "Average Request Duration (Seconds)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 21, "w": 24, "h": 7 },
+          "targets": [
+            { 
+              "expr": "sum(rate(http_request_duration_seconds_sum[5m])) by (method, path) / sum(rate(http_request_duration_seconds_count[5m])) by (method, path)", 
+              "legendFormat": "{{method}} {{path}}" 
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Seconds",
+                "axisPlacement": "auto",
+                "fillOpacity": 10,
+                "gradientMode": "opacity",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "showPoints": "auto"
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "calcs": ["mean", "max"],
+              "displayMode": "table",
+              "placement": "right"
+            }
+          }
         }
       ]
     }
