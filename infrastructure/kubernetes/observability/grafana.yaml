@@ -84,6 +84,7 @@ data:
     datasources:
       - name: Prometheus
         type: prometheus
+        uid: Prometheus
         access: proxy
         url: http://prometheus:9090
         isDefault: true
@@ -742,7 +743,7 @@ data:
         },
         {
           "title": "Fraud Alerts by Severity",
-          "type": "timeseries",
+          "type": "piechart",
           "gridPos": {
             "x": 0,
             "y": 19,
@@ -751,16 +752,21 @@ data:
           },
           "targets": [
             {
-              "expr": "sum(rate(fraud_alerts_total[5m])) by (severity)",
+              "expr": "sum(fraud_alerts_total) by (severity)",
               "legendFormat": "{{severity}}"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "fillOpacity": 15,
-                "lineWidth": 2
-              }
+          "options": {
+            "pieType": "donut",
+            "reduceOptions": {
+              "values": true,
+              "calcs": [
+                "lastNotNull"
+              ]
+            },
+            "legend": {
+              "displayMode": "table",
+              "placement": "right"
             }
           },
           "datasource": {
@@ -769,8 +775,8 @@ data:
           }
         },
         {
-          "title": "RabbitMQ Events Processed Rate",
-          "type": "timeseries",
+          "title": "Total RabbitMQ Events Processed",
+          "type": "stat",
           "gridPos": {
             "x": 12,
             "y": 19,
@@ -779,18 +785,21 @@ data:
           },
           "targets": [
             {
-              "expr": "sum(rate(events_processed_total[1m])) by (event_type)",
+              "expr": "sum(events_processed_total) by (event_type)",
               "legendFormat": "{{event_type}}"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "reqps",
-              "custom": {
-                "fillOpacity": 15,
-                "lineWidth": 2
-              }
-            }
+          "options": {
+            "reduceOptions": {
+              "values": true,
+              "calcs": [
+                "lastNotNull"
+              ]
+            },
+            "orientation": "auto",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "area"
           },
           "datasource": {
             "type": "prometheus",
