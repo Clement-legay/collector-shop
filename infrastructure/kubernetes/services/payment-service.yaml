@@ -4,6 +4,7 @@ metadata:
   name: payment-service
   namespace: collector
   labels:
+    app.kubernetes.io/part-of: payment-service
     app: payment-service
     app.kubernetes.io/name: payment-service
     app.kubernetes.io/instance: collector
@@ -16,6 +17,7 @@ spec:
   template:
     metadata:
       labels:
+        app.kubernetes.io/part-of: payment-service
         app: payment-service
         app.kubernetes.io/name: payment-service
         app.kubernetes.io/instance: collector
@@ -73,6 +75,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app.kubernetes.io/part-of: payment-service
   name: payment-service
   namespace: collector
 spec:

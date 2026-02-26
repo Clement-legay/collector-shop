@@ -4,6 +4,7 @@ metadata:
   name: frontend
   namespace: collector
   labels:
+    app.kubernetes.io/part-of: frontend
     app: frontend
     app.kubernetes.io/name: frontend
     app.kubernetes.io/instance: collector
@@ -16,6 +17,7 @@ spec:
   template:
     metadata:
       labels:
+        app.kubernetes.io/part-of: frontend
         app: frontend
         app.kubernetes.io/name: frontend
         app.kubernetes.io/instance: collector
@@ -34,6 +36,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app.kubernetes.io/part-of: frontend
   name: frontend
   namespace: collector
 spec:
