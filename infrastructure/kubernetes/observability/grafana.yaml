@@ -771,7 +771,7 @@ data:
           "options": {
             "pieType": "donut",
             "reduceOptions": {
-              "values": true,
+              "values": false,
               "calcs": [
                 "lastNotNull"
               ]
