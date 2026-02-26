@@ -160,28 +160,48 @@ export default function () {
 
 // ─── Résumé ────────────────────────────────────────────────────
 export function handleSummary(data) {
+    const metrics = data.metrics;
+
+    // Helper function to safely get a value and format it
+    const safeGet = (metric, property, decimals = 2) => {
+        if (metric && metric.values && metric.values[property] !== undefined) {
+            return Number(metric.values[property]).toFixed(decimals);
+        }
+        return (0).toFixed(decimals);
+    };
+
+    const durationInSeconds = (data.state.testRunDurationMs || 0) / 1000;
+    const totalRequests = metrics.http_reqs ? metrics.http_reqs.values.count : 0;
+
     const summary = {
         timestamp: new Date().toISOString(),
-        totalRequests: data.metrics.http_reqs ? data.metrics.http_reqs.values.count : 0,
-        failedRequests: data.metrics.http_req_failed ? data.metrics.http_req_failed.values.passes : 0,
-        avgDuration: data.metrics.http_req_duration ? data.metrics.http_req_duration.values.avg.toFixed(2) : 0,
-        p95Duration: data.metrics.http_req_duration ? data.metrics.http_req_duration.values['p(95)'].toFixed(2) : 0,
-        p99Duration: data.metrics.http_req_duration ? data.metrics.http_req_duration.values['p(99)'].toFixed(2) : 0,
-        maxDuration: data.metrics.http_req_duration ? data.metrics.http_req_duration.values.max.toFixed(2) : 0,
-        errorRate: data.metrics.errors ? (data.metrics.errors.values.rate * 100).toFixed(2) + '%' : '0%',
+        totalRequests: totalRequests,
+        failedRequests: metrics.http_req_failed ? metrics.http_req_failed.values.passes : 0,
+        requestsPerSecond: durationInSeconds > 0 ? (totalRequests / durationInSeconds).toFixed(2) : "0.00",
+        avgDuration: safeGet(metrics.http_req_duration, 'avg'),
+        p95Duration: safeGet(metrics.http_req_duration, 'p(95)'),
+        p99Duration: safeGet(metrics.http_req_duration, 'p(99)'),
+        maxDuration: safeGet(metrics.http_req_duration, 'max'),
+        errorRate: metrics.errors ? (metrics.errors.values.rate * 100).toFixed(2) + '%' : '0.00%',
+        droppedIterations: metrics.dropped_iterations ? metrics.dropped_iterations.values.count : 0,
+        successfulRequests: metrics.successful_requests ? metrics.successful_requests.values.count : 0,
     };
 
     console.log('\n═══════════════════════════════════════════════════');
     console.log('  📊 RÉSUMÉ DU TEST DE CHARGE - Collector.shop');
     console.log('═══════════════════════════════════════════════════');
-    console.log(`  Timestamp:         ${summary.timestamp}`);
-    console.log(`  Total Requêtes:    ${summary.totalRequests}`);
-    console.log(`  Requêtes échouées: ${summary.failedRequests}`);
-    console.log(`  Latence moyenne:   ${summary.avgDuration} ms`);
-    console.log(`  Latence P95:       ${summary.p95Duration} ms`);
-    console.log(`  Latence P99:       ${summary.p99Duration} ms`);
-    console.log(`  Latence Max:       ${summary.maxDuration} ms`);
-    console.log(`  Taux d'erreur:     ${summary.errorRate}`);
+    console.log(`  Timestamp:               ${summary.timestamp}`);
+    console.log(`  Requêtes / Seconde (RPS): ${summary.requestsPerSecond} req/s`);
+    console.log(`  Total Requêtes:          ${summary.totalRequests}`);
+    console.log(`  Succès:                  ${summary.successfulRequests}`);
+    console.log(`  Échecs:                  ${summary.failedRequests}`);
+    console.log(`  Itérations Perdues:      ${summary.droppedIterations}`);
+    console.log(`  Taux d'erreur:           ${summary.errorRate}`);
+    console.log('  ─────────────────────────────────────────────────');
+    console.log(`  Latence moyenne:         ${summary.avgDuration} ms`);
+    console.log(`  Latence P95:             ${summary.p95Duration} ms`);
+    console.log(`  Latence P99:             ${summary.p99Duration} ms`);
+    console.log(`  Latence Max:             ${summary.maxDuration} ms`);
     console.log('═══════════════════════════════════════════════════\n');
 
     return {
