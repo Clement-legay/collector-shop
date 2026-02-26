@@ -152,7 +152,20 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ─── Job 3 : CodeQL — Static Application Security Testing (SAST) ──────────
+  # ─── Job 3 : SonarCloud — Code quality & security ─────────────────────────
+  sonarcloud:
+    name: SonarCloud analysis
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: SonarSource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # ─── Job 4 : CodeQL — Static Application Security Testing (SAST) ───────────
   codeql:
     name: CodeQL analysis
     runs-on: ubuntu-latest
@@ -197,11 +210,11 @@ jobs:
           fi
           echo "✅ No CodeQL error/warning findings"
 
-  # ─── Job 4 : Update K8s manifests with new image tags (main only) ─────────
+  # ─── Job 5 : Update K8s manifests with new image tags (main only) ─────────
   update-manifests:
     name: Update Kubernetes manifests
     runs-on: ubuntu-latest
-    needs: [service-pipeline, codeql]
+    needs: [service-pipeline, codeql, sonarcloud]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write
