@@ -803,7 +803,7 @@ data:
           ],
           "options": {
             "reduceOptions": {
-              "values": true,
+              "values": false,
               "calcs": [
                 "lastNotNull"
               ]
