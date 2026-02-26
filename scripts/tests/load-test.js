@@ -203,8 +203,4 @@ export function handleSummary(data) {
     console.log(`  Latence P99:             ${summary.p99Duration} ms`);
     console.log(`  Latence Max:             ${summary.maxDuration} ms`);
     console.log('═══════════════════════════════════════════════════\n');
-
-    return {
-        'scripts/load-tests/results.json': JSON.stringify(data, null, 2),
-    };
 }
