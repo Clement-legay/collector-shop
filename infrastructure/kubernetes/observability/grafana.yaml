@@ -128,6 +128,115 @@ metadata:
   name: grafana-dashboards
   namespace: collector
 data:
+  technical-dashboard.json: |
+    {
+      "title": "Technical Overview",
+      "schemaVersion": 36,
+      "refresh": "5s",
+      "panels": [
+        {
+          "title": "Service Uptime & Health (Kube Endpoints)",
+          "type": "stat",
+          "gridPos": { "x": 0, "y": 0, "w": 24, "h": 5 },
+          "targets": [
+            { "expr": "sum(up{job=\"kubernetes-service-endpoints\", namespace=\"collector\"}) by (service)", "legendFormat": "{{service}}" }
+          ],
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "background"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {
+                  "options": {
+                    "0": { "color": "red", "index": 0, "text": "DOWN" },
+                    "1": { "color": "green", "index": 1, "text": "UP" }
+                  },
+                  "type": "value"
+                }
+              ]
+            },
+            "overrides": []
+          }
+        },
+        {
+          "title": "HTTP 95th Percentile Latency (P95) by Route",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 5, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "s", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
+            "overrides": []
+          }
+        },
+        {
+          "title": "HTTP 99th Percentile Latency (P99) by Route",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 5, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "s", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
+            "overrides": []
+          }
+        },
+        {
+          "title": "CPU Usage by Pods",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 13, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"collector\", pod!=\"\", container!=\"POD\"}[1m])) by (pod)",
+              "legendFormat": "{{pod}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "cores", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
+            "overrides": []
+          }
+        },
+        {
+          "title": "Memory Usage by Pods",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 13, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"collector\", pod!=\"\", container!=\"POD\"}) by (pod)",
+              "legendFormat": "{{pod}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "decbytes", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
+            "overrides": []
+          }
+        },
+        {
+          "title": "Ingress Requests per Second (RPS)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 21, "w": 24, "h": 7 },
+          "targets": [
+            {
+              "expr": "sum(rate(nginx_ingress_controller_requests{namespace=\"ingress-nginx\"}[1m])) by (ingress)",
+              "legendFormat": "{{ingress}} RPS"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "reqps", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
+            "overrides": []
+          }
+        }
+      ]
+    }
   collector-dashboard.json: |
     {
       "title": "Collector Microservices",
