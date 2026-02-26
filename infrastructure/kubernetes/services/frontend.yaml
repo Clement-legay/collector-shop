@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/clement-legay/collector-shop/frontend:sha-b0600268a12493010bafb1c3ed6b432b72f1cb9d
+          image: ghcr.io/clement-legay/collector-shop/frontend:sha-c882cd6710ddd266169ab69eb272b29614da3515
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
