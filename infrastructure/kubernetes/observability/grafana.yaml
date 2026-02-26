@@ -135,15 +135,16 @@ data:
       "refresh": "5s",
       "panels": [
         {
-          "title": "Service Uptime & Health (Kube Endpoints)",
+          "title": "Service Uptime (Kubernetes Endpoints)",
           "type": "stat",
           "gridPos": { "x": 0, "y": 0, "w": 24, "h": 5 },
           "targets": [
-            { "expr": "sum(up{job=\"kubernetes-service-endpoints\", namespace=\"collector\"}) by (service)", "legendFormat": "{{service}}" }
+            { "expr": "sum(up{job=\"kubernetes-service-endpoints\"}) by (service) > 0" }
           ],
           "options": {
             "reduceOptions": { "calcs": ["lastNotNull"] },
-            "colorMode": "background"
+            "colorMode": "background",
+            "textMode": "name"
           },
           "fieldConfig": {
             "defaults": {
@@ -156,83 +157,94 @@ data:
                   "type": "value"
                 }
               ]
-            },
-            "overrides": []
+            }
           }
         },
         {
-          "title": "HTTP 95th Percentile Latency (P95) by Route",
-          "type": "timeseries",
-          "gridPos": { "x": 0, "y": 5, "w": 12, "h": 8 },
+          "title": "Global HTTP P95 Latency",
+          "type": "stat",
+          "gridPos": { "x": 0, "y": 5, "w": 12, "h": 5 },
           "targets": [
-            {
-              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, path))",
-              "legendFormat": "{{method}} {{path}}"
-            }
+            { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))" }
           ],
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value",
+            "graphMode": "none"
+          },
           "fieldConfig": {
-            "defaults": { "unit": "s", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
-            "overrides": []
+            "defaults": {
+              "unit": "s",
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "orange", "value": 0.5 },
+                  { "color": "red", "value": 1.5 }
+                ]
+              }
+            }
           }
         },
         {
-          "title": "HTTP 99th Percentile Latency (P99) by Route",
-          "type": "timeseries",
-          "gridPos": { "x": 12, "y": 5, "w": 12, "h": 8 },
+          "title": "Global HTTP P99 Latency",
+          "type": "stat",
+          "gridPos": { "x": 12, "y": 5, "w": 12, "h": 5 },
           "targets": [
-            {
-              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, path))",
-              "legendFormat": "{{method}} {{path}}"
-            }
+            { "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))" }
           ],
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value",
+            "graphMode": "none"
+          },
           "fieldConfig": {
-            "defaults": { "unit": "s", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
-            "overrides": []
+            "defaults": {
+              "unit": "s",
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "orange", "value": 1.0 },
+                  { "color": "red", "value": 2.0 }
+                ]
+              }
+            }
           }
         },
         {
-          "title": "CPU Usage by Pods",
+          "title": "CPU Usage (Cores) by Collector Pod",
           "type": "timeseries",
-          "gridPos": { "x": 0, "y": 13, "w": 12, "h": 8 },
+          "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 },
           "targets": [
-            {
-              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"collector\", pod!=\"\", container!=\"POD\"}[1m])) by (pod)",
-              "legendFormat": "{{pod}}"
-            }
+            { "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"collector\", pod!=\"\", container!=\"POD\", container!=\"\"}[1m])) by (pod)", "legendFormat": "{{pod}}" }
           ],
           "fieldConfig": {
-            "defaults": { "unit": "cores", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
-            "overrides": []
+            "defaults": { "unit": "cores", "custom": { "fillOpacity": 10, "lineWidth": 2 } }
           }
         },
         {
-          "title": "Memory Usage by Pods",
+          "title": "Memory Usage by Collector Pod",
           "type": "timeseries",
-          "gridPos": { "x": 12, "y": 13, "w": 12, "h": 8 },
+          "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 },
           "targets": [
-            {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"collector\", pod!=\"\", container!=\"POD\"}) by (pod)",
-              "legendFormat": "{{pod}}"
-            }
+            { "expr": "sum(container_memory_working_set_bytes{namespace=\"collector\", pod!=\"\", container!=\"POD\", container!=\"\"}) by (pod)", "legendFormat": "{{pod}}" }
           ],
           "fieldConfig": {
-            "defaults": { "unit": "decbytes", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
-            "overrides": []
+            "defaults": { "unit": "bytes", "custom": { "fillOpacity": 10, "lineWidth": 2 } }
           }
         },
         {
           "title": "Ingress Requests per Second (RPS)",
           "type": "timeseries",
-          "gridPos": { "x": 0, "y": 21, "w": 24, "h": 7 },
+          "gridPos": { "x": 0, "y": 18, "w": 24, "h": 7 },
           "targets": [
-            {
-              "expr": "sum(rate(nginx_ingress_controller_requests{namespace=\"ingress-nginx\"}[1m])) by (ingress)",
-              "legendFormat": "{{ingress}} RPS"
-            }
+            { "expr": "sum(rate(nginx_ingress_controller_requests{namespace=\"ingress-nginx\"}[1m])) by (ingress)", "legendFormat": "RPS" }
           ],
           "fieldConfig": {
-            "defaults": { "unit": "reqps", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
-            "overrides": []
+            "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 } }
           }
         }
       ]
