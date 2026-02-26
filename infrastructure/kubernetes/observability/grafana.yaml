@@ -128,225 +128,584 @@ metadata:
   name: grafana-dashboards
   namespace: collector
 data:
-  technical-dashboard.json: |
+  user-dashboard.json: |
     {
-      "title": "Technical Overview",
+      "title": "User Service Overview",
       "schemaVersion": 36,
       "refresh": "5s",
       "panels": [
         {
-          "title": "Service Uptime (Kubernetes Endpoints)",
-          "type": "stat",
-          "gridPos": { "x": 0, "y": 0, "w": 24, "h": 5 },
-          "targets": [
-            { "expr": "sum(up{job=\"kubernetes-service-endpoints\"}) by (service) > 0" }
-          ],
-          "options": {
-            "reduceOptions": { "calcs": ["lastNotNull"] },
-            "colorMode": "background",
-            "textMode": "name"
+          "title": "User Service Overview - Service Uptime",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 5
           },
-          "fieldConfig": {
-            "defaults": {
-              "mappings": [
-                {
-                  "options": {
-                    "0": { "color": "red", "index": 0, "text": "DOWN" },
-                    "1": { "color": "green", "index": 1, "text": "UP" }
-                  },
-                  "type": "value"
-                }
-              ]
+          "targets": [
+            {
+              "expr": "sum(up{job=\"kubernetes-service-endpoints\", namespace=\"collector\", service=\"user-service\"})",
+              "legendFormat": "Endpoints UP"
             }
-          }
-        },
-        {
-          "title": "Global HTTP P95 Latency",
-          "type": "stat",
-          "gridPos": { "x": 0, "y": 5, "w": 12, "h": 5 },
-          "targets": [
-            { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))" }
           ],
           "options": {
-            "reduceOptions": { "calcs": ["lastNotNull"] },
-            "colorMode": "value",
-            "graphMode": "none"
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            }
           },
           "fieldConfig": {
             "defaults": {
-              "unit": "s",
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "orange", "value": 0.5 },
-                  { "color": "red", "value": 1.5 }
-                ]
+              "unit": "none",
+              "custom": {
+                "fillOpacity": 15,
+                "lineWidth": 2,
+                "gradientMode": "opacity"
               }
             }
           }
         },
         {
-          "title": "Global HTTP P99 Latency",
-          "type": "stat",
-          "gridPos": { "x": 12, "y": 5, "w": 12, "h": 5 },
-          "targets": [
-            { "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))" }
-          ],
-          "options": {
-            "reduceOptions": { "calcs": ["lastNotNull"] },
-            "colorMode": "value",
-            "graphMode": "none"
+          "title": "HTTP P95 Latency by Route (Seconds)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 5,
+            "w": 12,
+            "h": 8
           },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"user-service\"}[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ],
           "fieldConfig": {
             "defaults": {
               "unit": "s",
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "orange", "value": 1.0 },
-                  { "color": "red", "value": 2.0 }
-                ]
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
               }
             }
           }
         },
         {
-          "title": "CPU Usage (Cores) by Collector Pod",
+          "title": "HTTP P99 Latency by Route (Seconds)",
           "type": "timeseries",
-          "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 },
+          "gridPos": {
+            "x": 12,
+            "y": 5,
+            "w": 12,
+            "h": 8
+          },
           "targets": [
-            { "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"collector\", pod!=\"\", container!=\"POD\", container!=\"\"}[1m])) by (pod)", "legendFormat": "{{pod}}" }
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{service=\"user-service\"}[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
+            }
           ],
           "fieldConfig": {
-            "defaults": { "unit": "cores", "custom": { "fillOpacity": 10, "lineWidth": 2 } }
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
+              }
+            }
           }
         },
         {
-          "title": "Memory Usage by Collector Pod",
+          "title": "HTTP Error Rate (%)",
           "type": "timeseries",
-          "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 },
+          "gridPos": {
+            "x": 0,
+            "y": 13,
+            "w": 24,
+            "h": 6
+          },
           "targets": [
-            { "expr": "sum(container_memory_working_set_bytes{namespace=\"collector\", pod!=\"\", container!=\"POD\", container!=\"\"}) by (pod)", "legendFormat": "{{pod}}" }
+            {
+              "expr": "sum(rate(http_request_duration_seconds_count{service=\"user-service\", status=~\"5..|4..\"}[5m])) / sum(rate(http_request_duration_seconds_count{service=\"user-service\"}[5m])) * 100",
+              "legendFormat": "Error Rate"
+            }
           ],
           "fieldConfig": {
-            "defaults": { "unit": "bytes", "custom": { "fillOpacity": 10, "lineWidth": 2 } }
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "fillOpacity": 20,
+                "lineWidth": 2
+              }
+            }
           }
         },
-        {
-          "title": "Ingress Requests per Second (RPS)",
-          "type": "timeseries",
-          "gridPos": { "x": 0, "y": 18, "w": 24, "h": 7 },
-          "targets": [
-            { "expr": "sum(rate(nginx_ingress_controller_requests{namespace=\"ingress-nginx\"}[1m])) by (ingress)", "legendFormat": "RPS" }
-          ],
-          "fieldConfig": {
-            "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 } }
-          }
-        }
-      ]
-    }
-  collector-dashboard.json: |
-    {
-      "title": "Collector Microservices",
-      "schemaVersion": 36,
-      "refresh": "5s",
-      "panels": [
         {
           "title": "Total Users Registered",
           "type": "stat",
-          "gridPos": { "x": 0, "y": 0, "w": 8, "h": 6 },
-          "targets": [ { "expr": "sum(users_registered_total)" } ]
-        },
-        {
-          "title": "Total Payments Completed",
-          "type": "stat",
-          "gridPos": { "x": 8, "y": 0, "w": 8, "h": 6 },
-          "targets": [ { "expr": "sum(payments_completed_total)" } ]
-        },
-        {
-          "title": "Total Articles Created",
-          "type": "stat",
-          "gridPos": { "x": 16, "y": 0, "w": 8, "h": 6 },
-          "targets": [ { "expr": "sum(articles_created_total)" } ]
-        },
-        {
-          "title": "Fraud Alerts",
-          "type": "timeseries",
-          "gridPos": { "x": 0, "y": 6, "w": 12, "h": 8 },
+          "gridPos": {
+            "x": 0,
+            "y": 19,
+            "w": 12,
+            "h": 6
+          },
           "targets": [
-            { "expr": "sum(rate(fraud_alerts_total[5m])) by (severity)", "legendFormat": "{{severity}}" }
-          ]
-        },
-        {
-          "title": "Events Processed",
-          "type": "timeseries",
-          "gridPos": { "x": 12, "y": 6, "w": 12, "h": 8 },
-          "targets": [
-            { "expr": "sum(rate(events_processed_total[5m])) by (event_type)", "legendFormat": "{{event_type}}" }
+            {
+              "expr": "sum(users_registered_total)"
+            }
           ]
         },
         {
           "title": "Registration Logs (Emails)",
           "type": "table",
-          "gridPos": { "x": 0, "y": 14, "w": 8, "h": 7 },
+          "gridPos": {
+            "x": 12,
+            "y": 19,
+            "w": 12,
+            "h": 6
+          },
           "targets": [
-            { "expr": "max_over_time(users_registered_total[24h]) > 0", "format": "table", "instant": true }
+            {
+              "expr": "max_over_time(users_registered_total[24h]) > 0",
+              "format": "table",
+              "instant": true
+            }
           ]
-        },
+        }
+      ]
+    }
+  article-dashboard.json: |
+    {
+      "title": "Article Service Overview",
+      "schemaVersion": 36,
+      "refresh": "5s",
+      "panels": [
         {
-          "title": "Login Logs (Emails)",
-          "type": "table",
-          "gridPos": { "x": 8, "y": 14, "w": 8, "h": 7 },
-          "targets": [
-            { "expr": "max_over_time(logins_total[24h]) > 0", "format": "table", "instant": true }
-          ]
-        },
-        {
-          "title": "Fraud Alert Logs (Details)",
-          "type": "table",
-          "gridPos": { "x": 16, "y": 14, "w": 8, "h": 7 },
-          "targets": [
-            { "expr": "max_over_time(fraud_alerts_total[24h]) > 0", "format": "table", "instant": true }
-          ]
-        },
-        {
-          "title": "Average Request Duration (Seconds)",
+          "title": "Article Service Overview - Service Uptime",
           "type": "timeseries",
-          "gridPos": { "x": 0, "y": 21, "w": 24, "h": 7 },
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 5
+          },
           "targets": [
-            { 
-              "expr": "sum(rate(http_request_duration_seconds_sum[5m])) by (method, path) / sum(rate(http_request_duration_seconds_count[5m])) by (method, path)", 
-              "legendFormat": "{{method}} {{path}}" 
+            {
+              "expr": "sum(up{job=\"kubernetes-service-endpoints\", namespace=\"collector\", service=\"article-service\"})",
+              "legendFormat": "Endpoints UP"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {
+                "fillOpacity": 15,
+                "lineWidth": 2,
+                "gradientMode": "opacity"
+              }
+            }
+          }
+        },
+        {
+          "title": "HTTP P95 Latency by Route (Seconds)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 5,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"article-service\"}[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
             }
           ],
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "palette-classic" },
+              "unit": "s",
               "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "Seconds",
-                "axisPlacement": "auto",
                 "fillOpacity": 10,
-                "gradientMode": "opacity",
-                "lineInterpolation": "linear",
                 "lineWidth": 2,
-                "pointSize": 5,
-                "showPoints": "auto"
-              },
-              "unit": "s"
-            },
-            "overrides": []
+                "spanNulls": true
+              }
+            }
+          }
+        },
+        {
+          "title": "HTTP P99 Latency by Route (Seconds)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 12,
+            "y": 5,
+            "w": 12,
+            "h": 8
           },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{service=\"article-service\"}[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
+              }
+            }
+          }
+        },
+        {
+          "title": "HTTP Error Rate (%)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 13,
+            "w": 24,
+            "h": 6
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(http_request_duration_seconds_count{service=\"article-service\", status=~\"5..|4..\"}[5m])) / sum(rate(http_request_duration_seconds_count{service=\"article-service\"}[5m])) * 100",
+              "legendFormat": "Error Rate"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "fillOpacity": 20,
+                "lineWidth": 2
+              }
+            }
+          }
+        },
+        {
+          "title": "Total Articles Created",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 19,
+            "w": 24,
+            "h": 6
+          },
+          "targets": [
+            {
+              "expr": "sum(articles_created_total)"
+            }
+          ]
+        }
+      ]
+    }
+  payment-dashboard.json: |
+    {
+      "title": "Payment Service Overview",
+      "schemaVersion": 36,
+      "refresh": "5s",
+      "panels": [
+        {
+          "title": "Payment Service Overview - Service Uptime",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 5
+          },
+          "targets": [
+            {
+              "expr": "sum(up{job=\"kubernetes-service-endpoints\", namespace=\"collector\", service=\"payment-service\"})",
+              "legendFormat": "Endpoints UP"
+            }
+          ],
           "options": {
             "legend": {
-              "calcs": ["mean", "max"],
-              "displayMode": "table",
-              "placement": "right"
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {
+                "fillOpacity": 15,
+                "lineWidth": 2,
+                "gradientMode": "opacity"
+              }
+            }
+          }
+        },
+        {
+          "title": "HTTP P95 Latency by Route (Seconds)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 5,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"payment-service\"}[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
+              }
+            }
+          }
+        },
+        {
+          "title": "HTTP P99 Latency by Route (Seconds)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 12,
+            "y": 5,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{service=\"payment-service\"}[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
+              }
+            }
+          }
+        },
+        {
+          "title": "HTTP Error Rate (%)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 13,
+            "w": 24,
+            "h": 6
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(http_request_duration_seconds_count{service=\"payment-service\", status=~\"5..|4..\"}[5m])) / sum(rate(http_request_duration_seconds_count{service=\"payment-service\"}[5m])) * 100",
+              "legendFormat": "Error Rate"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "fillOpacity": 20,
+                "lineWidth": 2
+              }
+            }
+          }
+        },
+        {
+          "title": "Total Payments Completed",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 19,
+            "w": 24,
+            "h": 6
+          },
+          "targets": [
+            {
+              "expr": "sum(payments_completed_total)"
+            }
+          ]
+        }
+      ]
+    }
+  fraud-dashboard.json: |
+    {
+      "title": "Fraud Detection Overview",
+      "schemaVersion": 36,
+      "refresh": "5s",
+      "panels": [
+        {
+          "title": "Fraud Detection Overview - Service Uptime",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 5
+          },
+          "targets": [
+            {
+              "expr": "sum(up{job=\"kubernetes-service-endpoints\", namespace=\"collector\", service=\"fraud-detection-service\"})",
+              "legendFormat": "Endpoints UP"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {
+                "fillOpacity": 15,
+                "lineWidth": 2,
+                "gradientMode": "opacity"
+              }
+            }
+          }
+        },
+        {
+          "title": "HTTP P95 Latency by Route (Seconds)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 5,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"fraud-detection-service\"}[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
+              }
+            }
+          }
+        },
+        {
+          "title": "HTTP P99 Latency by Route (Seconds)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 12,
+            "y": 5,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{service=\"fraud-detection-service\"}[5m])) by (le, method, path))",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "spanNulls": true
+              }
+            }
+          }
+        },
+        {
+          "title": "HTTP Error Rate (%)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 13,
+            "w": 24,
+            "h": 6
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(http_request_duration_seconds_count{service=\"fraud-detection-service\", status=~\"5..|4..\"}[5m])) / sum(rate(http_request_duration_seconds_count{service=\"fraud-detection-service\"}[5m])) * 100",
+              "legendFormat": "Error Rate"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "fillOpacity": 20,
+                "lineWidth": 2
+              }
+            }
+          }
+        },
+        {
+          "title": "Fraud Alerts by Severity",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 19,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(fraud_alerts_total[5m])) by (severity)",
+              "legendFormat": "{{severity}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "fillOpacity": 15,
+                "lineWidth": 2
+              }
+            }
+          }
+        },
+        {
+          "title": "RabbitMQ Events Processed Rate",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 12,
+            "y": 19,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(events_processed_total[1m])) by (event_type)",
+              "legendFormat": "{{event_type}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "custom": {
+                "fillOpacity": 15,
+                "lineWidth": 2
+              }
             }
           }
         }
