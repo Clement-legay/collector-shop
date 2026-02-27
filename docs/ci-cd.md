@@ -21,7 +21,13 @@ Located at `.github/workflows/ci-cd.yaml`.
 - Scans images with **Trivy** for vulnerabilities.
 - Pushes images to **GitHub Container Registry (GHCR)**.
 
-### 3. Deploy (Update Manifests)
+### 3. CodeQL (SAST)
+- Runs in parallel with the main pipeline after the `setup` phase.
+- Performs Static Application Security Testing on the TypeScript/JavaScript codebase.
+- Scans for vulnerabilities, bugs, and bad practices.
+- Fails the pipeline if any `error` or `warning` findings are detected.
+
+### 4. Deploy (Update Manifests)
 - Runs only on `main` branch.
 - Updates the Kubernetes manifests in `infrastructure/kubernetes/services/` with the new image tags.
 - Commits changes back to the repository.
