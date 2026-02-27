@@ -22,11 +22,17 @@ kubectl wait -n argocd --for=condition=ready pod --all --timeout=300s
 ```
 
 ## 2. Access ArgoCD UI
-Port-forward the ArgoCD server:
+Ensure your `minikube tunnel` is running in a separate terminal:
 ```bash
-kubectl port-forward svc/argocd-server -n argocd 8080:443
+minikube tunnel
 ```
-Access at [https://localhost:8080](https://localhost:8080)
+
+Add the Minikube IP to your `/etc/hosts` file:
+```bash
+sudo echo "$(minikube ip) argocd.local" >> /etc/hosts
+```
+
+Access at [http://argocd.local](http://argocd.local)
 
 **Username**: `admin`
 **Password**: Get it via CLI:

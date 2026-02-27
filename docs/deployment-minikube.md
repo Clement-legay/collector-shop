@@ -23,10 +23,15 @@ Apply the Kubernetes manifests:
 ./scripts/deploy-local.sh
 ```
 
-## 4. Access Application
-Add the Minikube IP to your `/etc/hosts` file:
+## 4. Run Tunnel & Access Application
+The Kubernetes Ingress requires `minikube tunnel` to route traffic to your local machine. In a separate terminal, run:
 ```bash
-sudo echo "$(minikube ip) collector.local" >> /etc/hosts
+minikube tunnel
+```
+
+Add the Minikube IP to your `/etc/hosts` file (if you haven't already):
+```bash
+sudo echo "$(minikube ip) collector.local argocd.local" >> /etc/hosts
 ```
 
 Access the application at [http://collector.local](http://collector.local).
