@@ -1,7 +1,7 @@
 {
     "info": {
         "name": "Collector.shop API",
-        "description": "Complete Postman Collection covering all endpoints defined in the NestJS microservices.",
+        "description": "Complete Postman Collection matching the NestJS TypeORM entities and Validation DTOs.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -71,7 +71,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"title\": \"Vintage Comic\",\n  \"description\": \"First edition comic book\",\n  \"price\": 150.00,\n  \"category\": \"Comics\",\n  \"condition\": \"mint\",\n  \"images\": [\"url1.jpg\"],\n  \"sellerId\": \"uuid\"\n}",
+                            "raw": "{\n  \"title\": \"Vintage Comic\",\n  \"description\": \"First edition comic book\",\n  \"price\": 150.00,\n  \"sellerId\": \"uuid\",\n  \"photos\": [\"url1.jpg\"],\n  \"status\": \"published\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -242,7 +242,7 @@
                         "header": [],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"username\": \"johndoe\",\n  \"displayName\": \"John Doe\"\n}",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"address\": \"123 Collector Lane\",\n  \"role\": \"buyer\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -348,7 +348,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"displayName\": \"John Doe Jr.\"\n}",
+                            "raw": "{\n  \"name\": \"John Doe Jr.\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
