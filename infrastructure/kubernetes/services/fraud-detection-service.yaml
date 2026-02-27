@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: fraud-detection-service
-          image: ghcr.io/clement-legay/collector-shop/fraud-detection-service:sha-c882cd6710ddd266169ab69eb272b29614da3515
+          image: ghcr.io/clement-legay/collector-shop/fraud-detection-service:sha-41791117a760e375a57d0feb9f5a4e47be3f8e21
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3004
