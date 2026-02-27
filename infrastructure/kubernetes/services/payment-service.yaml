@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: ghcr.io/clement-legay/collector-shop/payment-service:sha-41791117a760e375a57d0feb9f5a4e47be3f8e21
+          image: ghcr.io/clement-legay/collector-shop/payment-service:sha-e9fa3d7ce0f9f7812653b14cd9f95f2cd97a3dc4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3003
