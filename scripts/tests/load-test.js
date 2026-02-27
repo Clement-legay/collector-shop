@@ -14,6 +14,7 @@ const successfulRequests = new Counter('successful_requests');
 const BASE_URL = __ENV.BASE_URL || 'http://collector.local/api';
 
 export const options = {
+    summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
     // Scénario progressif : montée en charge → pic → descente
     stages: [
         { duration: '30s', target: 10 },  // Ramp-up : 0 → 10 utilisateurs en 30s
