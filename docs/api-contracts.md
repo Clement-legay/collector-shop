@@ -10,39 +10,9 @@
 | GET | `/articles/:id` | Détail d'un article | - | `Article` |
 | POST | `/articles` | Créer un article | `CreateArticleDto` | `Article` |
 | PUT | `/articles/:id` | Modifier un article | `UpdateArticleDto` | `Article` |
+| PUT | `/articles/:id/price` | Changer le prix | `UpdatePriceDto` | `Article` |
+| PUT | `/articles/:id/status` | Changer le statut | `{"status": "..."}` | `Article` |
 | DELETE | `/articles/:id` | Supprimer un article | - | `void` |
-
-**CreateArticleDto**
-```json
-{
-  "title": "string",
-  "description": "string",
-  "price": "number",
-  "category": "string",
-  "condition": "mint | excellent | good | fair | poor",
-  "images": "string[]",
-  "sellerId": "string (UUID)"
-}
-```
-
-**Article Response**
-```json
-{
-  "id": "string (UUID)",
-  "title": "string",
-  "description": "string",
-  "price": "number",
-  "category": "string",
-  "condition": "string",
-  "images": "string[]",
-  "sellerId": "string (UUID)",
-  "status": "available | sold | reserved",
-  "createdAt": "datetime",
-  "updatedAt": "datetime"
-}
-```
-
----
 
 ### User Service (Port 3002)
 
@@ -50,87 +20,31 @@
 |--------|----------|-------------|--------------|----------|
 | POST | `/users/register` | Inscription | `RegisterDto` | `User + JWT` |
 | POST | `/users/login` | Connexion | `LoginDto` | `JWT` |
-| GET | `/users/profile` | Profil connecté | - | `User` |
-| PUT | `/users/profile` | Modifier profil | `UpdateProfileDto` | `User` |
-| GET | `/users/:id` | Profil public | - | `PublicUser` |
-
-**RegisterDto**
-```json
-{
-  "email": "string",
-  "password": "string",
-  "username": "string",
-  "displayName": "string"
-}
-```
-
-**LoginDto**
-```json
-{
-  "email": "string",
-  "password": "string"
-}
-```
-
-**User Response**
-```json
-{
-  "id": "string (UUID)",
-  "email": "string",
-  "username": "string",
-  "displayName": "string",
-  "createdAt": "datetime",
-  "token": "string (JWT)"
-}
-```
-
----
+| GET | `/users` | Liste tous les utilisateurs | - | `User[]` |
+| GET | `/users/:id` | Profil utilisateur | - | `User` |
+| PUT | `/users/:id` | Modifier utilisateur | `UpdateUserDto` | `User` |
+| POST | `/users/:id/ban` | Bannir utilisateur | - | `User` |
+| POST | `/users/:id/unban` | Débannir utilisateur | - | `User` |
 
 ### Payment Service (Port 3003)
 
 | Method | Endpoint | Description | Request Body | Response |
 |--------|----------|-------------|--------------|----------|
-| POST | `/payments/initiate` | Initier paiement | `InitiatePaymentDto` | `Transaction` |
-| POST | `/payments/:id/complete` | Finaliser paiement | - | `Transaction` |
-| GET | `/payments/user/:userId` | Historique user | - | `Transaction[]` |
+| POST | `/payments` | Initier paiement | `InitiatePaymentDto` | `Transaction` |
+| GET | `/payments` | Liste des paiements | - | `Transaction[]` |
 | GET | `/payments/:id` | Détail transaction | - | `Transaction` |
-
-**InitiatePaymentDto**
-```json
-{
-  "articleId": "string (UUID)",
-  "buyerId": "string (UUID)",
-  "amount": "number"
-}
-```
-
-**Transaction Response**
-```json
-{
-  "id": "string (UUID)",
-  "articleId": "string (UUID)",
-  "buyerId": "string (UUID)",
-  "sellerId": "string (UUID)",
-  "amount": "number",
-  "status": "pending | completed | failed | refunded",
-  "createdAt": "datetime",
-  "completedAt": "datetime | null"
-}
-```
-
----
+| GET | `/payments/user/:userId` | Historique acheteur | - | `Transaction[]` |
+| GET | `/payments/seller/:userId`| Historique vendeur | - | `Transaction[]` |
+| POST | `/payments/:id/validate` | Valider transaction | `{"approved": bool}` | `Transaction` |
+| POST | `/payments/:id/complete` | Finaliser transaction | - | `Transaction` |
 
 ### Fraud Detection Service (Port 3004)
 
-> ⚠️ **Service événementiel pur** - Pas d'API REST
+| Method | Endpoint | Description | Query Params | Response |
+|--------|----------|-------------|--------------|----------|
+| GET | `/fraud/alerts` | Liste les alertes de fraude | `?type=` ou `?severity=` | `FraudAlert[]` |
+| GET | `/fraud/stats` | Statistiques de fraude | - | `StatsObject` |
 
-**Endpoints Metrics uniquement :**
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/metrics` | Métriques Prometheus |
-
----
 
 ## RabbitMQ Events
 

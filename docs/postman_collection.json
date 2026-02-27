@@ -1,7 +1,7 @@
 {
     "info": {
         "name": "Collector.shop API",
-        "description": "Postman Collection for the Collector.shop Microservices API.",
+        "description": "Complete Postman Collection covering all endpoints defined in the NestJS microservices.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -90,7 +90,7 @@
                     }
                 },
                 {
-                    "name": "Update Article",
+                    "name": "Update Article (Full)",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -116,6 +116,82 @@
                             "path": [
                                 "articles",
                                 ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Article Price",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"price\": 200.00\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/articles/:id/price",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "articles",
+                                ":id",
+                                "price"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Article Status",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"status\": \"sold\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/articles/:id/status",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "articles",
+                                ":id",
+                                "status"
                             ],
                             "variable": [
                                 {
@@ -212,7 +288,7 @@
                     }
                 },
                 {
-                    "name": "Get Profile (Self)",
+                    "name": "Get All Users",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -222,19 +298,46 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/users/profile",
+                            "raw": "{{baseUrl}}/users",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "users",
-                                "profile"
+                                "users"
                             ]
                         }
                     }
                 },
                 {
-                    "name": "Update Profile",
+                    "name": "Get User By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/:id",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update User",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -253,23 +356,6 @@
                             }
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/users/profile",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "users",
-                                "profile"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Get Public Profile by ID",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
                             "raw": "{{baseUrl}}/users/:id",
                             "host": [
                                 "{{baseUrl}}"
@@ -277,6 +363,64 @@
                             "path": [
                                 "users",
                                 ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Ban User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/:id/ban",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                ":id",
+                                "ban"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Unban User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/:id/unban",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                ":id",
+                                "unban"
                             ],
                             "variable": [
                                 {
@@ -312,13 +456,157 @@
                             }
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/payments/initiate",
+                            "raw": "{{baseUrl}}/payments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Payments",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payment Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/:id",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "payments",
-                                "initiate"
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payments By Buyer ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/user/:userId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "user",
+                                ":userId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payments By Seller ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/seller/:userId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "seller",
+                                ":userId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Validate Payment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"approved\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/:id/validate",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                ":id",
+                                "validate"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "uuid"
+                                }
                             ]
                         }
                     }
@@ -351,9 +639,14 @@
                             ]
                         }
                     }
-                },
+                }
+            ]
+        },
+        {
+            "name": "Fraud Detection Service",
+            "item": [
                 {
-                    "name": "Get Payment History by User",
+                    "name": "Get Fraud Alerts",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -363,26 +656,31 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/payments/user/:userId",
+                            "raw": "{{baseUrl}}/fraud/alerts",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "payments",
-                                "user",
-                                ":userId"
+                                "fraud",
+                                "alerts"
                             ],
-                            "variable": [
+                            "query": [
                                 {
-                                    "key": "userId",
-                                    "value": "uuid"
+                                    "key": "type",
+                                    "value": "price_manipulation",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "severity",
+                                    "value": "red",
+                                    "disabled": true
                                 }
                             ]
                         }
                     }
                 },
                 {
-                    "name": "Get Payment Detail",
+                    "name": "Get Fraud Stats",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -392,19 +690,13 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/payments/:id",
+                            "raw": "{{baseUrl}}/fraud/stats",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "payments",
-                                ":id"
-                            ],
-                            "variable": [
-                                {
-                                    "key": "id",
-                                    "value": "uuid"
-                                }
+                                "fraud",
+                                "stats"
                             ]
                         }
                     }
